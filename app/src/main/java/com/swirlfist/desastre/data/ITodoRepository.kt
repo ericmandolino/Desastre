@@ -5,4 +5,6 @@ import kotlinx.coroutines.flow.Flow
 
 interface ITodoRepository {
     fun observeTodos(): Flow<List<Todo>>
+
+    fun removeTodo(id: Long)
 }

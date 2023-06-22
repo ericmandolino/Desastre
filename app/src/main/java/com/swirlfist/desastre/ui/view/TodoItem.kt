@@ -2,20 +2,30 @@ package com.swirlfist.desastre.ui.view
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Card
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.swirlfist.desastre.data.model.Todo
 import com.swirlfist.desastre.ui.theme.DesastreTheme
 
 @Composable
-fun TodoItem(todo: Todo) {
+fun TodoItem(
+    todo: Todo,
+    onRemove: (Long) -> Unit,
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -25,10 +35,27 @@ fun TodoItem(todo: Todo) {
                 .padding(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Text(
-                text = todo.title,
-                style = MaterialTheme.typography.titleMedium,
-            )
+            Row {
+                Text(
+                    text = todo.title,
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier
+                        .align(Alignment.CenterVertically)
+                        .weight(1f),
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                IconButton(
+                    onClick = { onRemove(todo.id) },
+                    modifier = Modifier
+                        .align(Alignment.Top),
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Delete,
+                        contentDescription = "Remove",
+                    )
+                }
+            }
             Text(
                 text = todo.description,
                 style = MaterialTheme.typography.bodyMedium,
@@ -46,7 +73,8 @@ fun TodoItemPreview() {
                 title = "Title",
                 description = "Aliquid facilis aperiam itaque et cumque sed totam est. Esse soluta modi perspiciatis. Placeat quis cum et enim. Quia reiciendis reprehenderit atque. Ea quaerat id nihil repudiandae. Et tenetur consectetur ad ipsa quia.",
                 isDone = false,
-            )
+            ),
+            onRemove = {},
         )
     }
 }

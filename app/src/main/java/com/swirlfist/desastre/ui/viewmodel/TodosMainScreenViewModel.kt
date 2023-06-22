@@ -14,4 +14,8 @@ class TodosMainScreenViewModel @Inject constructor(
     fun getTodoList(): Flow<List<Todo>> {
         return todoRepository.observeTodos()
     }
+
+    fun removeTodo(id: Long) {
+        todoRepository.removeTodo(id)
+    }
 }

@@ -10,9 +10,9 @@ class PreviewUtil {
             description: String? = null,
             isDone: Boolean = false,
         ): Todo {
-            val id = id?: 1L
+            val todoId = id?: 1L
             return Todo(
-                id = id,
+                id = todoId,
                 title = title?: "Title $id",
                 description = description?: "Description $id",
                 isDone = isDone,

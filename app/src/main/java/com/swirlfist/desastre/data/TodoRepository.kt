@@ -1,13 +1,13 @@
 package com.swirlfist.desastre.data
 
 import com.swirlfist.desastre.data.model.Todo
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.callbackFlow
 
 class TodoRepository : ITodoRepository {
-    private val todos = MutableList(
+    private var todos = MutableList(
         size = 100,
         init = { index -> Todo(
             id = index.toLong(),
@@ -16,8 +16,27 @@ class TodoRepository : ITodoRepository {
             isDone = index % 3 == 0,
         ) }
     )
+    private var trySendDataBlocking: (data: List<Todo>) -> Unit = { }
+    private var closeChannel: () -> Unit = { }
+    private var todosFlow: Flow<List<Todo>> = callbackFlow {
+        send(todos)
+        trySendDataBlocking = { data -> trySendBlocking(data) }
+        closeChannel = { close() }
+        awaitClose {
+            trySendDataBlocking = {}
+            closeChannel = {}
+        }
+    }
 
     override fun observeTodos(): Flow<List<Todo>> {
-        return flowOf(todos)
+        return todosFlow
+    }
+
+    override fun removeTodo(id: Long) {
+        todos = todos.toMutableList()
+        todos.removeIf { todo ->
+            todo.id == id
+        }
+        trySendDataBlocking(todos)
     }
 }

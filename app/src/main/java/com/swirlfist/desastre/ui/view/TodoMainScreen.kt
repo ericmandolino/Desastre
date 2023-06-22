@@ -30,12 +30,20 @@ fun TodoMainScreen(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
-        TodoList(todos)
+        TodoList(
+            todos,
+            onRemoveTodo = { todoId ->
+                todosMainScreenViewModel.removeTodo(todoId)
+           },
+        )
     }
 }
 
 @Composable
-fun TodoList(todos: List<Todo>) {
+fun TodoList(
+    todos: List<Todo>,
+    onRemoveTodo: (Long) -> Unit,
+) {
     LazyColumn(
         modifier = Modifier
             .padding(8.dp),
@@ -48,6 +56,7 @@ fun TodoList(todos: List<Todo>) {
             val todo = todos[index]
             TodoItem(
                 todo,
+                onRemoveTodo,
             )
         }
     }
@@ -60,7 +69,8 @@ fun TodoListPreview() {
         TodoList(
             todos = PreviewUtil.mockTodos(
                 size = 100
-            )
+            ),
+            onRemoveTodo = {},
         )
     }
 }
