@@ -15,12 +15,14 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.swirlfist.desastre.data.model.Todo
 import com.swirlfist.desastre.ui.theme.DesastreTheme
 import com.swirlfist.desastre.ui.viewmodel.TodosMainScreenViewModel
+import com.swirlfist.desastre.ui.viewmodel.UndoableTodoRemovalState
 
 @Composable
 fun TodoMainScreen(
     todosMainScreenViewModel: TodosMainScreenViewModel = hiltViewModel(),
 ) {
     val todos = todosMainScreenViewModel.getTodoList().collectAsState(initial = listOf()).value
+    val undoableRemovalState = todosMainScreenViewModel.getUndoableRemovalState()
 
     if (todos.isEmpty()) {
         return // TODO: show empty component
@@ -34,7 +36,8 @@ fun TodoMainScreen(
             todos,
             onRemoveTodo = { todoId ->
                 todosMainScreenViewModel.removeTodo(todoId)
-           },
+            },
+            undoableRemovalState,
         )
     }
 }
@@ -43,6 +46,7 @@ fun TodoMainScreen(
 fun TodoList(
     todos: List<Todo>,
     onRemoveTodo: (Long) -> Unit,
+    undoableRemovalState: UndoableTodoRemovalState,
 ) {
     LazyColumn(
         modifier = Modifier
@@ -54,10 +58,17 @@ fun TodoList(
             key = { index -> todos[index].id },
         ) { index ->
             val todo = todos[index]
-            TodoItem(
-                todo,
-                onRemoveTodo,
-            )
+            if (undoableRemovalState.undoableTodoRemovalIds.contains(todo.id)) {
+                UndoTodoItemRemoval(
+                    todoId = todo.id,
+                    onUndoClicked = undoableRemovalState.onUndoClicked,
+                )
+            } else {
+                TodoItem(
+                    todo,
+                    onRemoveTodo,
+                )
+            }
         }
     }
 }
@@ -71,6 +82,10 @@ fun TodoListPreview() {
                 size = 100
             ),
             onRemoveTodo = {},
+            undoableRemovalState = UndoableTodoRemovalState(
+                undoableTodoRemovalIds = listOf(),
+                onUndoClicked = {},
+            )
         )
     }
 }
