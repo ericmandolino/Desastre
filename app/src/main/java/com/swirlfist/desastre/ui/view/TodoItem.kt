@@ -40,7 +40,8 @@ fun TodoItem(
 ) {
     Card(
         modifier = Modifier
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .height(200.dp),
     ) {
         Column(
             modifier = Modifier
@@ -71,6 +72,8 @@ fun TodoItem(
             Text(
                 text = todo.description,
                 style = MaterialTheme.typography.bodyMedium,
+                maxLines = 4,
+                overflow = TextOverflow.Ellipsis,
             )
         }
     }
@@ -78,24 +81,26 @@ fun TodoItem(
 
 @Composable
 fun UndoTodoItemRemoval(
-    todoId: Long,
+    todo: Todo,
     removalCountdownProgress: Int,
     onUndoClicked: (Long) -> Unit,
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(48.dp)
+            .height(200.dp)
             .clip(RoundedCornerShape(16.dp))
             .background(MaterialTheme.colorScheme.secondaryContainer)
-            .clickable { onUndoClicked(todoId) },
+            .clickable { onUndoClicked(todo.id) },
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box {
             Text(
-                text = stringResource(R.string.undo),
+                text = "${stringResource(R.string.undo)}: ${todo.title}",
                 style = MaterialTheme.typography.titleMedium,
                 textAlign = TextAlign.Center,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
                 color = MaterialTheme.colorScheme.onSecondaryContainer,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -126,7 +131,7 @@ fun TodoItemPreview() {
     DesastreTheme {
         TodoItem(
             todo = PreviewUtil.mockTodo(
-                title = "Title",
+                title = "Aliquid facilis aperiam itaque et cumque sed totam est.",
                 description = "Aliquid facilis aperiam itaque et cumque sed totam est. Esse soluta modi perspiciatis. Placeat quis cum et enim. Quia reiciendis reprehenderit atque. Ea quaerat id nihil repudiandae. Et tenetur consectetur ad ipsa quia.",
                 isDone = false,
             ),
@@ -150,7 +155,7 @@ fun TodoItemPreview() {
 fun UndoTodoItemRemovalPreview() {
     DesastreTheme {
         UndoTodoItemRemoval(
-            todoId = 1L,
+            todo = PreviewUtil.mockTodo(),
             removalCountdownProgress = 50,
             onUndoClicked = {},
         )

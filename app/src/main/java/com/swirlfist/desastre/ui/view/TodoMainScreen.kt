@@ -60,7 +60,7 @@ fun TodoList(
             val todo = todos[index]
             if (undoableRemovalState.undoableTodoRemovals.containsKey(todo.id)) {
                 UndoTodoItemRemoval(
-                    todoId = todo.id,
+                    todo,
                     removalCountdownProgress = undoableRemovalState.undoableTodoRemovals[todo.id]?: 0,
                     onUndoClicked = undoableRemovalState.onUndoClicked,
                 )
