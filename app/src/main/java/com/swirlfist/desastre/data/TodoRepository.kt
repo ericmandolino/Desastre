@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.callbackFlow
 
 class TodoRepository : ITodoRepository {
     private var todos = MutableList(
-        size = 100,
+        size = 10,
         init = { index -> Todo(
             id = index.toLong(),
             title = "title $index",
