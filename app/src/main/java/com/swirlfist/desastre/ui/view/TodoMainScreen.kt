@@ -58,9 +58,10 @@ fun TodoList(
             key = { index -> todos[index].id },
         ) { index ->
             val todo = todos[index]
-            if (undoableRemovalState.undoableTodoRemovalIds.contains(todo.id)) {
+            if (undoableRemovalState.undoableTodoRemovals.containsKey(todo.id)) {
                 UndoTodoItemRemoval(
                     todoId = todo.id,
+                    removalCountdownProgress = undoableRemovalState.undoableTodoRemovals[todo.id]?: 0,
                     onUndoClicked = undoableRemovalState.onUndoClicked,
                 )
             } else {
@@ -83,7 +84,7 @@ fun TodoListPreview() {
             ),
             onRemoveTodo = {},
             undoableRemovalState = UndoableTodoRemovalState(
-                undoableTodoRemovalIds = listOf(),
+                undoableTodoRemovals = mapOf(),
                 onUndoClicked = {},
             )
         )

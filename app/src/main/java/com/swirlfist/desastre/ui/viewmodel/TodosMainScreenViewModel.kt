@@ -14,13 +14,13 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-private const val UNDO_TODO_REMOVAL_MILLISECONDS = 5000L
+private const val UNDO_TODO_REMOVAL_MILLISECONDS = 3000L
 
 @HiltViewModel
 class TodosMainScreenViewModel @Inject constructor(
     private val todoRepository: ITodoRepository
 ) : ViewModel()  {
-    private var undoableTodoRemovalIds by mutableStateOf(listOf<Long>())
+    private var undoableTodoRemovals by mutableStateOf(mapOf<Long, Int>())
     private var delayedTodoRemovalJobs = mutableMapOf<Long, Job>()
 
     fun getTodoList(): Flow<List<Todo>> {
@@ -28,23 +28,39 @@ class TodosMainScreenViewModel @Inject constructor(
     }
 
     fun removeTodo(id: Long) {
-        undoableTodoRemovalIds = undoableTodoRemovalIds + id
+        undoableTodoRemovals = undoableTodoRemovals + mapOf(Pair(id, 0))
         val removalJob = viewModelScope.launch { delayedRemoveTodo(id) }
         delayedTodoRemovalJobs[id] = removalJob
     }
 
     private suspend fun delayedRemoveTodo(id: Long) {
-        delay(UNDO_TODO_REMOVAL_MILLISECONDS)
+        delayWithProgressUpdate(
+            todoId = id,
+            delayMilliseconds = UNDO_TODO_REMOVAL_MILLISECONDS
+        )
         todoRepository.removeTodo(id)
         delayedTodoRemovalJobs.remove(id)
     }
 
+    private suspend fun delayWithProgressUpdate(
+        todoId: Long,
+        delayMilliseconds: Long,
+    ) {
+        val onePercentDelay = delayMilliseconds / 100
+        for (i in 1..100) {
+            delay(onePercentDelay)
+            val currentProgress = undoableTodoRemovals[todoId]?: 0
+            undoableTodoRemovals = undoableTodoRemovals - todoId
+            undoableTodoRemovals = undoableTodoRemovals + Pair(todoId, currentProgress + 1)
+        }
+    }
+
     fun getUndoableRemovalState(): UndoableTodoRemovalState {
         return UndoableTodoRemovalState(
-            undoableTodoRemovalIds,
+            undoableTodoRemovals,
             onUndoClicked = { todoId ->
                 delayedTodoRemovalJobs.remove(todoId)?.cancel()
-                undoableTodoRemovalIds = undoableTodoRemovalIds - todoId },
+                undoableTodoRemovals = undoableTodoRemovals - todoId },
         )
     }
 }

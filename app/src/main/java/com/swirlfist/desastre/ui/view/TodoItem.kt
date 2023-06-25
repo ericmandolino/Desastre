@@ -1,10 +1,13 @@
 package com.swirlfist.desastre.ui.view
 
+import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -20,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -75,6 +79,7 @@ fun TodoItem(
 @Composable
 fun UndoTodoItemRemoval(
     todoId: Long,
+    removalCountdownProgress: Int,
     onUndoClicked: (Long) -> Unit,
 ) {
     Row(
@@ -86,14 +91,32 @@ fun UndoTodoItemRemoval(
             .clickable { onUndoClicked(todoId) },
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(
-            text = stringResource(R.string.undo),
-            style = MaterialTheme.typography.titleMedium,
-            textAlign = TextAlign.Center,
-            color = MaterialTheme.colorScheme.onSecondaryContainer,
-            modifier = Modifier
-                .fillMaxWidth(),
-        )
+        Box {
+            Text(
+                text = stringResource(R.string.undo),
+                style = MaterialTheme.typography.titleMedium,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.Center),
+            )
+            Row {
+                val undoAvailabilityProgress = removalCountdownProgress.toFloat() / 100
+                Box(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .weight(maxOf(undoAvailabilityProgress, 0.01F))
+                        .background(Color.Black.copy(alpha = 0.1f)),
+                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .weight(maxOf(1F - undoAvailabilityProgress, 0.01F))
+                        .background(Color.Transparent),
+                )
+            }
+        }
     }
 }
 
@@ -112,12 +135,23 @@ fun TodoItemPreview() {
     }
 }
 
-@Preview(showBackground = true, widthDp = 320)
+@Preview(
+    name = "Light Mode",
+    showBackground = true,
+    widthDp = 320,
+)
+@Preview(
+    name = "Dark Mode",
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+    showBackground = true,
+    widthDp = 320,
+)
 @Composable
 fun UndoTodoItemRemovalPreview() {
     DesastreTheme {
         UndoTodoItemRemoval(
             todoId = 1L,
+            removalCountdownProgress = 50,
             onUndoClicked = {},
         )
     }
