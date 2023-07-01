@@ -70,6 +70,11 @@ fun TodoMainScreen(
             todosMainScreenViewModel,
             isAddingTodo,
             paddingValues,
+            onCompleteAddTodoClicked = {
+                if (todosMainScreenViewModel.onCompleteAddTodoClicked()) {
+                    isAddingTodo = false
+                }
+            }
         )},
         floatingActionButton = {
             FloatingActionButton(
@@ -78,7 +83,7 @@ fun TodoMainScreen(
                 onClick = {
                     isAddingTodo = !isAddingTodo
                     if (isAddingTodo) {
-                        todosMainScreenViewModel.onAddTodoClicked()
+                        todosMainScreenViewModel.onStartAddTodoClicked()
                     }
                 },
             ) {
@@ -97,6 +102,7 @@ fun TodoMainScreenContent(
     todosMainScreenViewModel: TodosMainScreenViewModel,
     isAddingTodo: Boolean,
     paddingValues: PaddingValues,
+    onCompleteAddTodoClicked: () -> Unit,
 ) {
     val todos = todosMainScreenViewModel.getTodoList().collectAsState(initial = listOf()).value
     val undoableRemovalState = todosMainScreenViewModel.getUndoableRemovalState()
@@ -119,7 +125,10 @@ fun TodoMainScreenContent(
                 )
             }
             if (isAddingTodo) {
-                AddTodo(todosMainScreenViewModel.getTodoAdditionState().collectAsState().value)
+                AddTodo(
+                    todosMainScreenViewModel.getTodoAdditionState().collectAsState().value,
+                    onCompleteAddTodoClicked,
+                )
             }
         }
     }
@@ -164,6 +173,7 @@ fun TodoList(
 @Composable
 fun AddTodo(
     todoAdditionState: TodoAdditionState,
+    onCompleteAddTodoClicked: () -> Unit,
 ) {
     val localFocusManager = LocalFocusManager.current
 
@@ -206,11 +216,13 @@ fun AddTodo(
                         AddTodoAsColumn(
                             todoAdditionState,
                             nofDescriptionLines,
+                            onCompleteAddTodoClicked,
                         )
                     } else {
                         AddTodoAsRow(
                             todoAdditionState,
                             nofDescriptionLines,
+                            onCompleteAddTodoClicked,
                         )
                     }
                 }
@@ -223,6 +235,7 @@ fun AddTodo(
 fun AddTodoAsColumn(
     todoAdditionState: TodoAdditionState,
     nofDescriptionLines: Int,
+    onCompleteAddTodoClicked: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -231,14 +244,18 @@ fun AddTodoAsColumn(
         horizontalAlignment = Alignment.Start,
     ) {
         AddTodoTitleAndDescription(
-            todoAdditionState.title,
-            todoAdditionState.description,
+            title = todoAdditionState.title,
+            description = todoAdditionState.description,
             nofDescriptionLines,
-            todoAdditionState.onTitleChanged,
-            todoAdditionState.onDescriptionChanged,
+            onTitleChanged = todoAdditionState.onTitleChanged,
+            onDescriptionChanged = todoAdditionState.onDescriptionChanged,
         )
         Spacer(modifier = Modifier.height(8.dp))
-        AddTodoOptions()
+        AddTodoOptions(
+            addReminder = todoAdditionState.addReminder,
+            onAddReminderChanged = todoAdditionState.onAddReminderChanged,
+            onCompleteAddTodoClicked,
+        )
     }
 }
 
@@ -246,6 +263,7 @@ fun AddTodoAsColumn(
 fun AddTodoAsRow(
     todoAdditionState: TodoAdditionState,
     nofDescriptionLines: Int,
+    onCompleteAddTodoClicked: () -> Unit,
 ) {
     Row(
         verticalAlignment = Alignment.Bottom,
@@ -257,11 +275,11 @@ fun AddTodoAsRow(
                 .verticalScroll(rememberScrollState()),
         ) {
             AddTodoTitleAndDescription(
-                todoAdditionState.title,
-                todoAdditionState.description,
+                title = todoAdditionState.title,
+                description = todoAdditionState.description,
                 nofDescriptionLines,
-                todoAdditionState.onTitleChanged,
-                todoAdditionState.onDescriptionChanged,
+                onTitleChanged = todoAdditionState.onTitleChanged,
+                onDescriptionChanged = todoAdditionState.onDescriptionChanged,
             )
         }
         Spacer(modifier = Modifier.width(8.dp))
@@ -272,7 +290,11 @@ fun AddTodoAsRow(
             horizontalAlignment = Alignment.Start,
             verticalArrangement = Arrangement.Bottom,
         ) {
-            AddTodoOptions()
+            AddTodoOptions(
+                addReminder = todoAdditionState.addReminder,
+                onAddReminderChanged = todoAdditionState.onAddReminderChanged,
+                onCompleteAddTodoClicked,
+            )
         }
     }
 }
@@ -313,17 +335,19 @@ fun AddTodoTitleAndDescription(
 }
 
 @Composable
-fun ColumnScope.AddTodoOptions() {
-    var addReminderChecked by rememberSaveable { mutableStateOf(false) }
-
+fun ColumnScope.AddTodoOptions(
+    addReminder: Boolean,
+    onAddReminderChanged: (Boolean) -> Unit,
+    onCompleteAddTodoClicked: () -> Unit,
+) {
     Row(
         modifier = Modifier
             .wrapContentWidth(),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Checkbox(
-            checked = addReminderChecked,
-            onCheckedChange = {addReminderChecked = !addReminderChecked }
+            checked = addReminder,
+            onCheckedChange = { onAddReminderChanged(!addReminder) }
         )
         Text(
             text = stringResource(R.string.add_reminder),
@@ -333,7 +357,7 @@ fun ColumnScope.AddTodoOptions() {
     Button(
         modifier = Modifier
             .align(Alignment.End),
-        onClick = { /*TODO*/ },
+        onClick = onCompleteAddTodoClicked,
     ) {
         Text(stringResource(R.string.add))
     }
@@ -372,7 +396,8 @@ fun AddTodoPreview() {
                 onTitleChanged = {},
                 onDescriptionChanged = {},
                 onAddReminderChanged = {},
-            )
+            ),
+            onCompleteAddTodoClicked = {},
         )
     }
 }

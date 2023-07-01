@@ -38,7 +38,7 @@ class TodosMainScreenViewModel @Inject constructor(
         return todoAdditionState.asStateFlow()
     }
 
-    fun onAddTodoClicked() {
+    fun onStartAddTodoClicked() {
         todoAdditionState.update { state ->
             state.copy(
                 title = "",
@@ -46,6 +46,15 @@ class TodosMainScreenViewModel @Inject constructor(
                 addReminder = false,
             )
         }
+    }
+
+    fun onCompleteAddTodoClicked(): Boolean {
+        if (todoAdditionState.value.title.isEmpty()) {
+            // TODO: display validation error
+            return false
+        }
+
+        return true
     }
 
     fun removeTodo(id: Long) {
