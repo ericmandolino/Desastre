@@ -11,9 +11,15 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+private const val TITLE_MAX_CHARACTERS = 50
+private const val DESCRIPTION_MAX_CHARACTERS = 2000
 private const val UNDO_TODO_REMOVAL_MILLISECONDS = 3000L
 
 @HiltViewModel
@@ -22,9 +28,24 @@ class TodosMainScreenViewModel @Inject constructor(
 ) : ViewModel()  {
     private var undoableTodoRemovals by mutableStateOf(mapOf<Long, Int>())
     private var delayedTodoRemovalJobs = mutableMapOf<Long, Job>()
+    private val todoAdditionState = MutableStateFlow(createTodoAdditionState())
 
     fun getTodoList(): Flow<List<Todo>> {
         return todoRepository.observeTodos()
+    }
+
+    fun getTodoAdditionState(): StateFlow<TodoAdditionState> {
+        return todoAdditionState.asStateFlow()
+    }
+
+    fun onAddTodoClicked() {
+        todoAdditionState.update { state ->
+            state.copy(
+                title = "",
+                description = "",
+                addReminder = false,
+            )
+        }
     }
 
     fun removeTodo(id: Long) {
@@ -62,5 +83,32 @@ class TodosMainScreenViewModel @Inject constructor(
                 delayedTodoRemovalJobs.remove(todoId)?.cancel()
                 undoableTodoRemovals = undoableTodoRemovals - todoId },
         )
+    }
+
+    private fun createTodoAdditionState(): TodoAdditionState {
+        return TodoAdditionState(
+            title = "",
+            description = "",
+            addReminder = false,
+            onTitleChanged = { title ->
+                todoAdditionState.update { state ->
+                    state.copy(title = truncateText(title, TITLE_MAX_CHARACTERS))
+                }
+            },
+            onDescriptionChanged = { description ->
+                todoAdditionState.update { state ->
+                    state.copy(description = truncateText(description, DESCRIPTION_MAX_CHARACTERS))
+                }
+            },
+            onAddReminderChanged = { addReminder ->
+                todoAdditionState.update { state ->
+                    state.copy(addReminder = addReminder)
+                }
+            },
+        )
+    }
+
+    private fun truncateText(input: String, maxLength: Int): String {
+        return if (input.length > maxLength) input.substring(0, maxLength) else input
     }
 }

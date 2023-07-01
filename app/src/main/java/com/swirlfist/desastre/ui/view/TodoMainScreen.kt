@@ -54,11 +54,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.swirlfist.desastre.R
 import com.swirlfist.desastre.data.model.Todo
 import com.swirlfist.desastre.ui.theme.DesastreTheme
+import com.swirlfist.desastre.ui.viewmodel.TodoAdditionState
 import com.swirlfist.desastre.ui.viewmodel.TodosMainScreenViewModel
 import com.swirlfist.desastre.ui.viewmodel.UndoableTodoRemovalState
-
-const val TITLE_MAX_CHARACTERS = 50
-const val DESCRIPTION_MAX_CHARACTERS = 2000
 
 @Composable
 fun TodoMainScreen(
@@ -79,6 +77,9 @@ fun TodoMainScreen(
                 containerColor = MaterialTheme.colorScheme.secondary,
                 onClick = {
                     isAddingTodo = !isAddingTodo
+                    if (isAddingTodo) {
+                        todosMainScreenViewModel.onAddTodoClicked()
+                    }
                 },
             ) {
                 Icon(
@@ -118,7 +119,7 @@ fun TodoMainScreenContent(
                 )
             }
             if (isAddingTodo) {
-                AddTodo()
+                AddTodo(todosMainScreenViewModel.getTodoAdditionState().collectAsState().value)
             }
         }
     }
@@ -161,7 +162,9 @@ fun TodoList(
 }
 
 @Composable
-fun AddTodo() {
+fun AddTodo(
+    todoAdditionState: TodoAdditionState,
+) {
     val localFocusManager = LocalFocusManager.current
 
     Surface(
@@ -199,26 +202,15 @@ fun AddTodo() {
                         defaultElevation = 8.dp,
                     ),
                 ) {
-                    var title by rememberSaveable { mutableStateOf("") }
-                    var description by rememberSaveable { mutableStateOf("") }
-                    val onTitleChanged: (String) -> Unit = { it -> title = if (it.length > TITLE_MAX_CHARACTERS) it.substring(0, TITLE_MAX_CHARACTERS) else it }
-                    val onDescriptionChanged: (String) -> Unit = { description = if (it.length > DESCRIPTION_MAX_CHARACTERS) it.substring(0, DESCRIPTION_MAX_CHARACTERS) else it }
-
                     if (asColumn) {
                         AddTodoAsColumn(
-                            title,
-                            description,
+                            todoAdditionState,
                             nofDescriptionLines,
-                            onTitleChanged,
-                            onDescriptionChanged,
                         )
                     } else {
                         AddTodoAsRow(
-                            title,
-                            description,
+                            todoAdditionState,
                             nofDescriptionLines,
-                            onTitleChanged,
-                            onDescriptionChanged,
                         )
                     }
                 }
@@ -229,11 +221,8 @@ fun AddTodo() {
 
 @Composable
 fun AddTodoAsColumn(
-    title: String,
-    description: String,
+    todoAdditionState: TodoAdditionState,
     nofDescriptionLines: Int,
-    onTitleChanged: (String) -> Unit,
-    onDescriptionChanged: (String) -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -242,11 +231,11 @@ fun AddTodoAsColumn(
         horizontalAlignment = Alignment.Start,
     ) {
         AddTodoTitleAndDescription(
-            title,
-            description,
+            todoAdditionState.title,
+            todoAdditionState.description,
             nofDescriptionLines,
-            onTitleChanged,
-            onDescriptionChanged,
+            todoAdditionState.onTitleChanged,
+            todoAdditionState.onDescriptionChanged,
         )
         Spacer(modifier = Modifier.height(8.dp))
         AddTodoOptions()
@@ -255,11 +244,8 @@ fun AddTodoAsColumn(
 
 @Composable
 fun AddTodoAsRow(
-    title: String,
-    description: String,
+    todoAdditionState: TodoAdditionState,
     nofDescriptionLines: Int,
-    onTitleChanged: (String) -> Unit,
-    onDescriptionChanged: (String) -> Unit,
 ) {
     Row(
         verticalAlignment = Alignment.Bottom,
@@ -271,11 +257,11 @@ fun AddTodoAsRow(
                 .verticalScroll(rememberScrollState()),
         ) {
             AddTodoTitleAndDescription(
-                title,
-                description,
+                todoAdditionState.title,
+                todoAdditionState.description,
                 nofDescriptionLines,
-                onTitleChanged,
-                onDescriptionChanged,
+                todoAdditionState.onTitleChanged,
+                todoAdditionState.onDescriptionChanged,
             )
         }
         Spacer(modifier = Modifier.width(8.dp))
@@ -378,6 +364,15 @@ fun TodoListPreview() {
 @Composable
 fun AddTodoPreview() {
     DesastreTheme {
-        AddTodo()
+        AddTodo(
+            TodoAdditionState(
+                title = "Title",
+                description = "Description",
+                addReminder = true,
+                onTitleChanged = {},
+                onDescriptionChanged = {},
+                onAddReminderChanged = {},
+            )
+        )
     }
 }
