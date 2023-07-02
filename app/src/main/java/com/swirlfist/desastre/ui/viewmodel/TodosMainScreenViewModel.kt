@@ -49,7 +49,8 @@ class TodosMainScreenViewModel @Inject constructor(
     }
 
     fun onCompleteAddTodoClicked(): Boolean {
-        if (todoAdditionState.value.title.isEmpty()) {
+        val newTodoAddition = todoAdditionState.value
+        if (newTodoAddition.title.isEmpty()) {
             todoAdditionState.update { state ->
                 state.copy(
                     showTitleEmptyValidationError = true,
@@ -57,6 +58,13 @@ class TodosMainScreenViewModel @Inject constructor(
             }            
             return false
         }
+
+        todoRepository.addTodo(Todo(
+            id = 0,
+            title = newTodoAddition.title,
+            description = newTodoAddition.description,
+            isDone = false,
+        ))
 
         return true
     }

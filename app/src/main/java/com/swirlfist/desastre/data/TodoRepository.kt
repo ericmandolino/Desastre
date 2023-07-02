@@ -8,13 +8,13 @@ import kotlinx.coroutines.flow.callbackFlow
 
 class TodoRepository : ITodoRepository {
     private var todos = MutableList(
-        size = 10,
+        size = 0,
         init = { index -> Todo(
             id = index.toLong(),
             title = "title $index",
             description = "description $index",
             isDone = index % 3 == 0,
-        ) }
+        ) },
     )
     private var trySendDataBlocking: (data: List<Todo>) -> Unit = { }
     private var closeChannel: () -> Unit = { }
@@ -32,8 +32,12 @@ class TodoRepository : ITodoRepository {
         return todosFlow
     }
 
+    override fun addTodo(todo: Todo) {
+        todos.add(todo)
+        trySendDataBlocking(todos)
+    }
+
     override fun removeTodo(id: Long) {
-        todos = todos.toMutableList()
         todos.removeIf { todo ->
             todo.id == id
         }

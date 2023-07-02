@@ -8,4 +8,6 @@
     <string name="add_reminder">Add reminder</string>
     <string name="title_needed_error">A title is needed!</string>
     <string name="validation_failed">Validation failed</string>
+    <string name="nothing_to_do">Nothing to do?</string>
+    <string name="nothing_to_do_suggestion">Start adding your TODOs, chores, tasks… anything you want to keep track of that needs doing and you may need to be reminded of :)</string>
 </resources>

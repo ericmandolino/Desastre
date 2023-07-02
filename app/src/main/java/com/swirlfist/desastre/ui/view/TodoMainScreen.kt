@@ -51,6 +51,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.error
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -116,7 +117,7 @@ fun TodoMainScreenContent(
     ) {
         Box {
             if (todos.isEmpty()) {
-                // TODO: show empty component
+                EmptyTodoList()
             } else {
                 TodoList(
                     todos,
@@ -134,6 +135,29 @@ fun TodoMainScreenContent(
                 )
             }
         }
+    }
+}
+
+@Composable
+fun EmptyTodoList() {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+
+    ) {
+        Text(
+            text = stringResource(R.string.nothing_to_do),
+            style = MaterialTheme.typography.titleLarge,
+        )
+        Spacer(modifier = Modifier.height(24.dp))
+        Text(
+            text = stringResource(R.string.nothing_to_do_suggestion),
+            style = MaterialTheme.typography.bodyLarge,
+            textAlign = TextAlign.Center,
+        )
     }
 }
 
@@ -376,6 +400,14 @@ fun ColumnScope.AddTodoOptions(
         onClick = onCompleteAddTodoClicked,
     ) {
         Text(stringResource(R.string.add))
+    }
+}
+
+@Preview(showBackground = true, widthDp = 320, heightDp = 320)
+@Composable
+fun EmptyTodoListPreview() {
+    DesastreTheme {
+        EmptyTodoList()
     }
 }
 
