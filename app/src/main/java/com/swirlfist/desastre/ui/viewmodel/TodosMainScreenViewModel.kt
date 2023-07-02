@@ -50,7 +50,11 @@ class TodosMainScreenViewModel @Inject constructor(
 
     fun onCompleteAddTodoClicked(): Boolean {
         if (todoAdditionState.value.title.isEmpty()) {
-            // TODO: display validation error
+            todoAdditionState.update { state ->
+                state.copy(
+                    showTitleEmptyValidationError = true,
+                )
+            }            
             return false
         }
 
@@ -97,11 +101,15 @@ class TodosMainScreenViewModel @Inject constructor(
     private fun createTodoAdditionState(): TodoAdditionState {
         return TodoAdditionState(
             title = "",
+            showTitleEmptyValidationError = false,
             description = "",
             addReminder = false,
             onTitleChanged = { title ->
                 todoAdditionState.update { state ->
-                    state.copy(title = truncateText(title, TITLE_MAX_CHARACTERS))
+                    state.copy(
+                        title = truncateText(title, TITLE_MAX_CHARACTERS),
+                        showTitleEmptyValidationError = false,
+                    )
                 }
             },
             onDescriptionChanged = { description ->

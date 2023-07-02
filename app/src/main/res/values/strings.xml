@@ -6,4 +6,6 @@
     <string name="title">Title</string>
     <string name="description">Description</string>
     <string name="add_reminder">Add reminder</string>
+    <string name="title_needed_error">A title is needed!</string>
+    <string name="validation_failed">Validation failed</string>
 </resources>

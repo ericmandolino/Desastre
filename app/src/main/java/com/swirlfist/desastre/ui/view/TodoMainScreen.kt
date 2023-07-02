@@ -24,6 +24,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -47,6 +48,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.error
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -245,6 +248,7 @@ fun AddTodoAsColumn(
     ) {
         AddTodoTitleAndDescription(
             title = todoAdditionState.title,
+            showTitleValidationError = todoAdditionState.showTitleEmptyValidationError,
             description = todoAdditionState.description,
             nofDescriptionLines,
             onTitleChanged = todoAdditionState.onTitleChanged,
@@ -276,6 +280,7 @@ fun AddTodoAsRow(
         ) {
             AddTodoTitleAndDescription(
                 title = todoAdditionState.title,
+                showTitleValidationError = todoAdditionState.showTitleEmptyValidationError,
                 description = todoAdditionState.description,
                 nofDescriptionLines,
                 onTitleChanged = todoAdditionState.onTitleChanged,
@@ -302,21 +307,32 @@ fun AddTodoAsRow(
 @Composable
 fun AddTodoTitleAndDescription(
     title: String,
+    showTitleValidationError: Boolean,
     description: String,
     nofDescriptionLines: Int,
     onTitleChanged: (String) -> Unit,
     onDescriptionChanged: (String) -> Unit,
 ) {
+    val titleNeededValidationError = stringResource(R.string.title_needed_error)
+
     TextField(
         value = title,
         onValueChange = { onTitleChanged(it) },
-        label = {
-            Text(stringResource(R.string.title))
+        isError = showTitleValidationError,
+        label = { Text(stringResource(if (!showTitleValidationError) R.string.title else R.string.title_needed_error )) },
+        trailingIcon = {
+            if (showTitleValidationError) {
+                Icon(
+                    imageVector = Icons.Filled.Warning,
+                    contentDescription = stringResource(R.string.validation_failed)
+                )
+            }
         },
         textStyle = MaterialTheme.typography.titleMedium,
         singleLine = true,
         modifier = Modifier
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .semantics { if (showTitleValidationError) error(titleNeededValidationError) },
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
     )
     Spacer(modifier = Modifier.height(8.dp))
@@ -391,6 +407,7 @@ fun AddTodoPreview() {
         AddTodo(
             TodoAdditionState(
                 title = "Title",
+                showTitleEmptyValidationError = true,
                 description = "Description",
                 addReminder = true,
                 onTitleChanged = {},
