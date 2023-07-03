@@ -59,12 +59,15 @@ class TodosMainScreenViewModel @Inject constructor(
             return false
         }
 
-        todoRepository.addTodo(Todo(
-            id = 0,
-            title = newTodoAddition.title,
-            description = newTodoAddition.description,
-            isDone = false,
-        ))
+        todoRepository.addTodo(
+            todo = Todo(
+                id = 0,
+                title = newTodoAddition.title,
+                description = newTodoAddition.description,
+                isDone = false,
+            ),
+            coroutineScope = viewModelScope,
+        )
 
         return true
     }
@@ -80,7 +83,10 @@ class TodosMainScreenViewModel @Inject constructor(
             todoId = id,
             delayMilliseconds = UNDO_TODO_REMOVAL_MILLISECONDS
         )
-        todoRepository.removeTodo(id)
+        todoRepository.removeTodo(
+            id,
+            coroutineScope = viewModelScope,
+        )
         delayedTodoRemovalJobs.remove(id)
     }
 

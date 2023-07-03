@@ -1,46 +1,39 @@
 package com.swirlfist.desastre.data
 
+import com.swirlfist.desastre.data.db.TodoDao
 import com.swirlfist.desastre.data.model.Todo
-import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.channels.trySendBlocking
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class TodoRepository : ITodoRepository {
-    private var todos = MutableList(
-        size = 0,
-        init = { index -> Todo(
-            id = index.toLong(),
-            title = "title $index",
-            description = "description $index",
-            isDone = index % 3 == 0,
-        ) },
-    )
-    private var trySendDataBlocking: (data: List<Todo>) -> Unit = { }
-    private var closeChannel: () -> Unit = { }
-    private var todosFlow: Flow<List<Todo>> = callbackFlow {
-        send(todos)
-        trySendDataBlocking = { data -> trySendBlocking(data) }
-        closeChannel = { close() }
-        awaitClose {
-            trySendDataBlocking = {}
-            closeChannel = {}
-        }
-    }
-
+class TodoRepository @Inject constructor(
+    private val todoDao: TodoDao
+) : ITodoRepository {
     override fun observeTodos(): Flow<List<Todo>> {
-        return todosFlow
+        return todoDao.observeAll()
     }
 
-    override fun addTodo(todo: Todo) {
-        todos.add(todo)
-        trySendDataBlocking(todos)
-    }
-
-    override fun removeTodo(id: Long) {
-        todos.removeIf { todo ->
-            todo.id == id
+    override fun addTodo(
+        todo: Todo,
+        coroutineScope: CoroutineScope,
+    ) {
+        coroutineScope.launch(
+            context = Dispatchers.IO
+        ) {
+            todoDao.insert(todo)
         }
-        trySendDataBlocking(todos)
+    }
+
+    override fun removeTodo(
+        id: Long,
+        coroutineScope: CoroutineScope,
+    ) {
+        coroutineScope.launch(
+            context = Dispatchers.IO
+        ) {
+            todoDao.delete(id)
+        }
     }
 }
