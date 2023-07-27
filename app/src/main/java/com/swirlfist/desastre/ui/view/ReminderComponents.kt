@@ -88,7 +88,7 @@ fun DayPickerElementWrapper(
         modifier = Modifier
             .border(
                 width = 1.dp,
-                color = MaterialTheme.colorScheme.inversePrimary,
+                color = MaterialTheme.colorScheme.secondary,
                 shape = RoundedCornerShape(8.dp)
             )
     ) {

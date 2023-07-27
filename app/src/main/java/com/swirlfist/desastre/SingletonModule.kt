@@ -2,6 +2,7 @@ package com.swirlfist.desastre
 
 import android.content.Context
 import androidx.room.Room
+import com.swirlfist.desastre.data.CoroutineDispatcherProvider
 import com.swirlfist.desastre.data.ITodoRepository
 import com.swirlfist.desastre.data.TodoRepository
 import com.swirlfist.desastre.data.db.TodoDao
@@ -19,6 +20,10 @@ class SingletonModule {
 
     @Singleton
     @Provides
+    fun provideCoroutineDispatcherProvider(): CoroutineDispatcherProvider = CoroutineDispatcherProvider()
+
+    @Singleton
+    @Provides
     fun provideTodoDatabase(@ApplicationContext context: Context): TodoDatabase =
         Room
             .databaseBuilder(context, TodoDatabase::class.java, "todo_database")
@@ -31,7 +36,7 @@ class SingletonModule {
 
     @Singleton
     @Provides
-    fun provideTodoRepository(todoDao: TodoDao): ITodoRepository {
-        return TodoRepository(todoDao)
+    fun provideTodoRepository(todoDao: TodoDao, coroutineDispatcherProvider: CoroutineDispatcherProvider): ITodoRepository {
+        return TodoRepository(todoDao, coroutineDispatcherProvider.getIO())
     }
 }
