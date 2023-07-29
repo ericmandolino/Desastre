@@ -108,7 +108,7 @@ fun TodoMainScreenContent(
     paddingValues: PaddingValues,
     onCompleteAddTodoClicked: () -> Unit,
 ) {
-    val todos = todosMainScreenViewModel.getTodoList().collectAsState(initial = listOf()).value
+    val todos = todosMainScreenViewModel.observeTodoList().collectAsState(initial = listOf()).value
     val undoableRemovalState = todosMainScreenViewModel.getUndoableRemovalState()
 
     Surface(

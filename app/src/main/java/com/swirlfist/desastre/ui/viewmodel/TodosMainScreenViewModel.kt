@@ -5,8 +5,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.swirlfist.desastre.data.ITodoRepository
 import com.swirlfist.desastre.data.model.Todo
+import com.swirlfist.desastre.data.useCase.IAddTodoUseCase
+import com.swirlfist.desastre.data.useCase.IObserveTodoListUseCase
+import com.swirlfist.desastre.data.useCase.IRemoveTodoUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -24,14 +26,16 @@ private const val UNDO_TODO_REMOVAL_MILLISECONDS = 3000L
 
 @HiltViewModel
 class TodosMainScreenViewModel @Inject constructor(
-    private val todoRepository: ITodoRepository
+    private val observeTodoListUseCase: IObserveTodoListUseCase,
+    private val addTodoUseCase: IAddTodoUseCase,
+    private val removeTodoUseCase: IRemoveTodoUseCase,
 ) : ViewModel()  {
     private var undoableTodoRemovals by mutableStateOf(mapOf<Long, Int>())
     private var delayedTodoRemovalJobs = mutableMapOf<Long, Job>()
     private val todoAdditionState = MutableStateFlow(createTodoAdditionState())
 
-    fun getTodoList(): Flow<List<Todo>> {
-        return todoRepository.observeTodos()
+    fun observeTodoList(): Flow<List<Todo>> {
+        return observeTodoListUseCase.invoke()
     }
 
     fun getTodoAdditionState(): StateFlow<TodoAdditionState> {
@@ -67,7 +71,7 @@ class TodosMainScreenViewModel @Inject constructor(
         )
 
         viewModelScope.launch {
-            todoRepository.addTodo(todo)
+            addTodoUseCase.invoke(todo)
         }
 
         return true
@@ -84,7 +88,7 @@ class TodosMainScreenViewModel @Inject constructor(
             todoId = id,
             delayMilliseconds = UNDO_TODO_REMOVAL_MILLISECONDS
         )
-        todoRepository.removeTodo(id)
+        removeTodoUseCase.invoke(id)
         delayedTodoRemovalJobs.remove(id)
     }
 
