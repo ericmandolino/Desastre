@@ -3,7 +3,7 @@ package com.swirlfist.desastre.data
 import com.swirlfist.desastre.data.db.TodoDao
 import com.swirlfist.desastre.data.model.Todo
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert
@@ -11,9 +11,9 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.Mockito.times
-import org.mockito.Mockito.`when`
 import org.mockito.junit.MockitoJUnitRunner
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 
 @RunWith(MockitoJUnitRunner::class)
 internal class TodoRepositoryTest {
@@ -28,10 +28,8 @@ internal class TodoRepositoryTest {
             todoDao,
             ioDispatcher = testDispatcher
         )
-        val todosFlow: Flow<List<Todo>> = flow {
-            emit(listOf())
-        }
-        `when`(todoDao.observeAll()).thenReturn(todosFlow)
+        val todosFlow: Flow<List<Todo>> = flowOf(listOf())
+        whenever(todoDao.observeAll()).thenReturn(todosFlow)
 
         // Act
         val result = repository.observeTodos()
