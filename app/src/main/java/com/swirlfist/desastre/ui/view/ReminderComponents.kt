@@ -8,7 +8,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
@@ -22,9 +24,14 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TimeInput
+import androidx.compose.material3.TimePicker
 import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -34,20 +41,26 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.swirlfist.desastre.R
 import com.swirlfist.desastre.data.model.ReminderTimeUnit
 import com.swirlfist.desastre.ui.theme.DesastreTheme
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalTime
 import java.time.ZoneId
 
+private const val MIN_REMINDER_MINUTES = 60L
+
 @Composable
-fun DayPicker() {
+fun DaySelector() {
     var showDatePickerDialog by rememberSaveable { mutableStateOf(false) }
     Column(
         modifier = Modifier
@@ -60,16 +73,20 @@ fun DayPicker() {
             .fillMaxWidth()
             .padding(8.dp)
 
-        DayPickerElementWrapper {
+        PickerElementWrapper {
             TodayTomorrow(modifier = childModifier)
         }
-        DayPickerElementWrapper {
-            AmountOfTimeSelector(modifier = childModifier)
-        }
-        DayPickerElementWrapper {
-            DateSelector(
+        PickerElementWrapper {
+            AmountOfTimeSelector(
                 modifier = childModifier,
-                onShowDatePicker = { showDatePickerDialog = true },
+                forToday = false,
+            )
+        }
+        PickerElementWrapper {
+            PickerSelector(
+                modifier = childModifier,
+                text = stringResource(R.string.pick_a_date),
+                onShowPicker = { showDatePickerDialog = true },
             )
         }
         if (showDatePickerDialog) {
@@ -81,7 +98,47 @@ fun DayPicker() {
 }
 
 @Composable
-fun DayPickerElementWrapper(
+fun TimeSelector(
+    forToday: Boolean,
+) {
+    var showTimePickerDialog by rememberSaveable { mutableStateOf(false) }
+    Column(
+        modifier = Modifier
+            .width(320.dp)
+            .padding(8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        val childModifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+
+        if (forToday) {
+            PickerElementWrapper {
+                AmountOfTimeSelector(
+                    modifier = childModifier,
+                    forToday = true,
+                )
+            }
+        }
+        PickerElementWrapper {
+            PickerSelector(
+                modifier = childModifier,
+                text = stringResource(R.string.pick_a_time),
+                onShowPicker = { showTimePickerDialog = true },
+            )
+        }
+        if (showTimePickerDialog) {
+            TimePicker(
+                forToday,
+                onDismiss = { showTimePickerDialog = false }
+            )
+        }
+    }
+}
+
+@Composable
+fun PickerElementWrapper(
     wrapped: @Composable () -> Unit,
 ) {
     Row(
@@ -125,9 +182,25 @@ fun TodayTomorrow(
 @Composable
 fun AmountOfTimeSelector(
     modifier: Modifier,
+    forToday: Boolean,
 ) {
     var amount by rememberSaveable { mutableStateOf<Int?>(1) }
-    var chosenReminderTimeUnit by rememberSaveable { mutableStateOf(ReminderTimeUnit.Day) }
+    var chosenReminderTimeUnit by rememberSaveable {
+        mutableStateOf(if (forToday) ReminderTimeUnit.Hour else ReminderTimeUnit.Day)
+    }
+    val options = if (forToday) {
+        listOf(
+            Pair(ReminderTimeUnit.Minute, pluralStringResource(R.plurals.minute, amount?: 1)),
+            Pair(ReminderTimeUnit.Hour, pluralStringResource(R.plurals.hour, amount?:1)),
+        )
+    } else {
+        listOf(
+            Pair(ReminderTimeUnit.Day, pluralStringResource(R.plurals.day, amount?: 1)),
+            Pair(ReminderTimeUnit.Week, pluralStringResource(R.plurals.week, amount?:1)),
+            Pair(ReminderTimeUnit.Month, pluralStringResource(R.plurals.month, amount?: 1)),
+            Pair(ReminderTimeUnit.Year, pluralStringResource(R.plurals.year, amount?: 1)),
+        )
+    }
 
     Column(
         modifier = modifier,
@@ -148,12 +221,7 @@ fun AmountOfTimeSelector(
             )
             ChooseOption(
                 chosenOption = chosenReminderTimeUnit,
-                options = listOf(
-                    Pair(ReminderTimeUnit.Day, pluralStringResource(R.plurals.day, amount?: 1)),
-                    Pair(ReminderTimeUnit.Week, pluralStringResource(R.plurals.week, amount?:1)),
-                    Pair(ReminderTimeUnit.Month, pluralStringResource(R.plurals.month, amount?: 1)),
-                    Pair(ReminderTimeUnit.Year, pluralStringResource(R.plurals.year, amount?: 1)),
-                ),
+                options = options,
                 onChosenOptionChanged = {
                     chosenReminderTimeUnit = it
                 },
@@ -162,15 +230,17 @@ fun AmountOfTimeSelector(
             )
         }
         Button(
-            onClick = { /*TODO*/ }
+            onClick = { /*TODO*/ },
+            enabled = isValidSelectedAmount(forToday, amount ?: 1, chosenReminderTimeUnit)
         ) {
             val timeFromNow = pluralStringResource(
                 id = when (chosenReminderTimeUnit) {
+                    ReminderTimeUnit.Minute -> R.plurals.x_minutes
+                    ReminderTimeUnit.Hour -> R.plurals.x_hours
                     ReminderTimeUnit.Day -> R.plurals.x_days
                     ReminderTimeUnit.Week -> R.plurals.x_weeks
                     ReminderTimeUnit.Month -> R.plurals.x_months
                     ReminderTimeUnit.Year -> R.plurals.x_years
-                    else -> R.plurals.x_days
                 },
                 count = amount?: 1,
             ).format(amount?: 1)
@@ -186,19 +256,20 @@ fun AmountOfTimeSelector(
 }
 
 @Composable
-fun DateSelector(
+fun PickerSelector(
     modifier: Modifier,
-    onShowDatePicker: () -> Unit,
+    text: String,
+    onShowPicker: () -> Unit,
     ) {
     Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.Center,
     ) {
         Button(
-            onClick = onShowDatePicker,
+            onClick = onShowPicker,
         ) {
             Text(
-                text = stringResource(R.string.pick_a_date),
+                text,
                 style = MaterialTheme.typography.bodyMedium,
             )
         }
@@ -329,11 +400,126 @@ fun DatePicker(
     }
 }
 
-@Preview(widthDp = 320, heightDp = 640, showBackground = true)
+@SuppressLint("UnrememberedMutableState")
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DayPickerPreview() {
+fun TimePicker(
+    forToday: Boolean,
+    onDismiss: () -> Unit,
+) {
+    val timePickerState = rememberTimePickerState(is24Hour = true)
+    val configuration = LocalConfiguration.current
+
+    TimePickerDialog(
+        onCancel = onDismiss,
+        onConfirm = {
+            /* TODO */
+            Log.d("gus", "${timePickerState.hour}:${timePickerState.minute}")
+        },
+        validSelectedTime = isValidSelectedTime(forToday, timePickerState.hour, timePickerState.minute)
+    ) {
+        if (configuration.screenHeightDp > 600) {
+            TimePicker(
+                state = timePickerState,
+            )
+        } else {
+            TimeInput(
+                state = timePickerState,
+            )
+        }
+    }
+}
+
+@Composable
+fun TimePickerDialog(
+    title: String = stringResource(R.string.select_time),
+    onCancel: () -> Unit,
+    onConfirm: () -> Unit,
+    validSelectedTime: Boolean,
+    toggle: @Composable () -> Unit = {},
+    content: @Composable () -> Unit,
+) {
+    Dialog(
+        onDismissRequest = onCancel,
+        properties = DialogProperties(
+            usePlatformDefaultWidth = false,
+        ),
+    ) {
+        Surface(
+            shape = MaterialTheme.shapes.extraLarge,
+            tonalElevation = 8.dp,
+            modifier = Modifier
+                .width(IntrinsicSize.Min)
+                .height(IntrinsicSize.Min)
+                .background(
+                    shape = MaterialTheme.shapes.extraLarge,
+                    color = MaterialTheme.colorScheme.surface
+                ),
+        ) {
+            toggle()
+            Column(
+                modifier = Modifier.padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 20.dp),
+                    text = title,
+                    style = MaterialTheme.typography.labelMedium,
+                )
+                content()
+                Row(
+                    modifier = Modifier
+                        .height(40.dp)
+                        .fillMaxWidth()
+                ) {
+                    Spacer(modifier = Modifier.weight(1f))
+                    TextButton(
+                        onClick = onCancel,
+                    ) { Text(stringResource(android.R.string.cancel)) }
+                    TextButton(
+                        onClick = onConfirm,
+                        enabled = validSelectedTime,
+                    ) { Text(stringResource(android.R.string.ok)) }
+                }
+            }
+        }
+    }
+}
+
+private fun isValidSelectedAmount(
+    forToday: Boolean,
+    amount: Int,
+    chosenReminderTimeUnit: ReminderTimeUnit,
+): Boolean {
+    if (!forToday || chosenReminderTimeUnit != ReminderTimeUnit.Minute) {
+        return true
+    }
+
+    return amount >= MIN_REMINDER_MINUTES
+}
+
+private fun isValidSelectedTime(
+    forToday: Boolean,
+    hour: Int,
+    minute: Int
+) : Boolean {
+    if (!forToday) {
+        return true
+    }
+
+    val selected = LocalTime.of(hour, minute)
+    val min = LocalTime.now().plusMinutes(MIN_REMINDER_MINUTES - 1)
+
+    return selected.isAfter(min)
+}
+
+@Preview(widthDp = 320, showBackground = true)
+@Composable
+fun DaySelectorPreview() {
     DesastreTheme {
-        DayPicker()
+        DaySelector()
     }
 }
 
@@ -342,6 +528,26 @@ fun DayPickerPreview() {
 fun DatePickerPreview() {
     DesastreTheme {
         DatePicker(
+            onDismiss = {},
+        )
+    }
+}
+
+@Preview(widthDp = 320, showBackground = true)
+@Composable
+fun TimeSelectorPreview() {
+    DesastreTheme {
+        TimeSelector(true)
+    }
+}
+
+@Preview(name="time-picker", showBackground = true, heightDp = 640)
+@Preview(name="time-input", showBackground = true, widthDp = 320, heightDp = 320)
+@Composable
+fun TimePickerPreview() {
+    DesastreTheme {
+        TimePicker(
+            forToday = true,
             onDismiss = {},
         )
     }

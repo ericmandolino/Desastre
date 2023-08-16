@@ -14,6 +14,16 @@
     <string name="today">Today</string>
     <string name="tomorrow">Tomorrow</string>
     <string name="pick_a_date">Pick a date</string>
+    <string name="pick_a_time">Pick a time</string>
+    <string name="select_time">Select time</string>
+    <plurals name="minute">
+        <item quantity="one">minute</item>
+        <item quantity="other">minutes</item>
+    </plurals>
+    <plurals name="hour">
+        <item quantity="one">hour</item>
+        <item quantity="other">hours</item>
+    </plurals>
     <plurals name="day">
         <item quantity="one">day</item>
         <item quantity="other">days</item>
@@ -29,6 +39,14 @@
     <plurals name="year">
         <item quantity="one">year</item>
         <item quantity="other">years</item>
+    </plurals>
+    <plurals name="x_minutes">
+        <item quantity="one">%d minute</item>
+        <item quantity="other">%d minutes</item>
+    </plurals>
+    <plurals name="x_hours">
+        <item quantity="one">%d hour</item>
+        <item quantity="other">%d hours</item>
     </plurals>
     <plurals name="x_days">
         <item quantity="one">%d day</item>
