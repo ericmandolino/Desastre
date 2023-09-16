@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.swirlfist.desastre.data.ICoroutineDispatcherProvider
 import com.swirlfist.desastre.data.model.Todo
 import com.swirlfist.desastre.data.useCase.IAddTodoUseCase
 import com.swirlfist.desastre.data.useCase.IObserveTodoListUseCase
@@ -18,6 +19,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 private const val TITLE_MAX_CHARACTERS = 50
@@ -26,6 +28,7 @@ private const val UNDO_TODO_REMOVAL_MILLISECONDS = 3000L
 
 @HiltViewModel
 class TodosMainScreenViewModel @Inject constructor(
+    private val coroutineDispatcherProvider: ICoroutineDispatcherProvider,
     private val observeTodoListUseCase: IObserveTodoListUseCase,
     private val addTodoUseCase: IAddTodoUseCase,
     private val removeTodoUseCase: IRemoveTodoUseCase,
@@ -52,14 +55,16 @@ class TodosMainScreenViewModel @Inject constructor(
         }
     }
 
-    fun onCompleteAddTodoClicked(): Boolean {
+    fun onCompleteAddTodoClicked(
+        onNavigateToAddReminder: (todoId: Long) -> Unit,
+    ): Boolean {
         val newTodoAddition = todoAdditionState.value
         if (newTodoAddition.title.isEmpty()) {
             todoAdditionState.update { state ->
                 state.copy(
                     showTitleEmptyValidationError = true,
                 )
-            }            
+            }
             return false
         }
 
@@ -71,7 +76,13 @@ class TodosMainScreenViewModel @Inject constructor(
         )
 
         viewModelScope.launch {
-            addTodoUseCase.invoke(todo)
+            val todoId = addTodoUseCase.invoke(todo)
+            if (!newTodoAddition.addReminder) {
+                return@launch
+            }
+            withContext(coroutineDispatcherProvider.getMain()) {
+                onNavigateToAddReminder(todoId)
+            }
         }
 
         return true

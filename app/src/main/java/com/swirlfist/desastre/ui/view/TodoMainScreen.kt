@@ -65,6 +65,7 @@ import com.swirlfist.desastre.ui.viewmodel.UndoableTodoRemovalState
 @Composable
 fun TodoMainScreen(
     todosMainScreenViewModel: TodosMainScreenViewModel = hiltViewModel(),
+    onNavigateToAddReminder: (todoId: Long) -> Unit,
 ) {
     var isAddingTodo by rememberSaveable { mutableStateOf(false) }
 
@@ -75,7 +76,7 @@ fun TodoMainScreen(
             isAddingTodo,
             paddingValues,
             onCompleteAddTodoClicked = {
-                if (todosMainScreenViewModel.onCompleteAddTodoClicked()) {
+                if (todosMainScreenViewModel.onCompleteAddTodoClicked(onNavigateToAddReminder)) {
                     isAddingTodo = false
                 }
             }

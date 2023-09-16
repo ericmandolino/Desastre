@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface TodoDao {
     @Insert
-    fun insert(todo: Todo)
+    fun insert(todo: Todo): Long
 
     @Delete
     fun delete(todo: Todo)

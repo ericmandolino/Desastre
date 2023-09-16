@@ -11,11 +11,15 @@ class TodoRepository @Inject constructor(
     private val todoDao: TodoDao,
     private val ioDispatcher: CoroutineDispatcher,
 ) : ITodoRepository {
+    override fun observeTodo(todoId: Long): Flow<Todo?> {
+        return todoDao.observeTodo(todoId)
+    }
+
     override fun observeTodos(): Flow<List<Todo>> {
         return todoDao.observeAll()
     }
 
-    override suspend fun addTodo(todo: Todo) = withContext(ioDispatcher) {
+    override suspend fun addTodo(todo: Todo): Long = withContext(ioDispatcher) {
         todoDao.insert(todo)
     }
 

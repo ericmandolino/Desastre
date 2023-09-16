@@ -3,12 +3,14 @@ package com.swirlfist.desastre
 import android.content.Context
 import androidx.room.Room
 import com.swirlfist.desastre.data.CoroutineDispatcherProvider
+import com.swirlfist.desastre.data.ICoroutineDispatcherProvider
 import com.swirlfist.desastre.data.ITodoRepository
 import com.swirlfist.desastre.data.TodoRepository
 import com.swirlfist.desastre.data.db.TodoDao
 import com.swirlfist.desastre.data.db.TodoDatabase
 import com.swirlfist.desastre.data.useCase.IAddTodoUseCase
 import com.swirlfist.desastre.data.useCase.IObserveTodoListUseCase
+import com.swirlfist.desastre.data.useCase.IObserveTodoUseCase
 import com.swirlfist.desastre.data.useCase.IRemoveTodoUseCase
 import dagger.Module
 import dagger.Provides
@@ -23,7 +25,7 @@ class SingletonModule {
 
     @Singleton
     @Provides
-    fun provideCoroutineDispatcherProvider(): CoroutineDispatcherProvider = CoroutineDispatcherProvider()
+    fun provideCoroutineDispatcherProvider(): ICoroutineDispatcherProvider = CoroutineDispatcherProvider()
 
     @Singleton
     @Provides
@@ -42,6 +44,10 @@ class SingletonModule {
     fun provideTodoRepository(todoDao: TodoDao, coroutineDispatcherProvider: CoroutineDispatcherProvider): ITodoRepository {
         return TodoRepository(todoDao, coroutineDispatcherProvider.getIO())
     }
+
+    @Singleton
+    @Provides
+    fun provideObserveTodoUseCase(todoRepository: ITodoRepository): IObserveTodoUseCase = IObserveTodoUseCase(todoRepository::observeTodo)
 
     @Singleton
     @Provides

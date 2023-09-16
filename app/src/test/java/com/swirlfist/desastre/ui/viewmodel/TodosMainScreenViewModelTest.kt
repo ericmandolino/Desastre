@@ -1,5 +1,6 @@
 package com.swirlfist.desastre.ui.viewmodel
 
+import com.swirlfist.desastre.data.ICoroutineDispatcherProvider
 import com.swirlfist.desastre.data.model.Todo
 import com.swirlfist.desastre.data.useCase.IAddTodoUseCase
 import com.swirlfist.desastre.data.useCase.IObserveTodoListUseCase
@@ -22,6 +23,7 @@ import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.Mockito.times
 import org.mockito.junit.MockitoJUnitRunner
+import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -29,6 +31,9 @@ import org.mockito.kotlin.whenever
 @OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(MockitoJUnitRunner::class)
 class TodosMainScreenViewModelTest {
+    @Mock
+    lateinit var coroutineDispatcherProvider: ICoroutineDispatcherProvider
+
     @Mock
     lateinit var observeTodoListUseCase: IObserveTodoListUseCase
 
@@ -42,8 +47,11 @@ class TodosMainScreenViewModelTest {
 
     @Before
     fun setUp() {
-        Dispatchers.setMain(StandardTestDispatcher())
+        val testDispatcher = StandardTestDispatcher()
+        Dispatchers.setMain(testDispatcher)
+        whenever(coroutineDispatcherProvider.getMain()).thenReturn(testDispatcher)
         viewModel = TodosMainScreenViewModel(
+            coroutineDispatcherProvider,
             observeTodoListUseCase,
             addTodoUseCase,
             removeTodoUseCase,
@@ -166,7 +174,7 @@ class TodosMainScreenViewModelTest {
 
         // Act
         todoAdditionState.onTitleChanged("")
-        val result = viewModel.onCompleteAddTodoClicked()
+        val result = viewModel.onCompleteAddTodoClicked {}
         todoAdditionState = viewModel.getTodoAdditionState().value
 
         // Assert
@@ -185,9 +193,10 @@ class TodosMainScreenViewModelTest {
         todoAdditionState.onTitleChanged(title)
         todoAdditionState.onDescriptionChanged(description)
         todoAdditionState.onAddReminderChanged(addReminder)
+        whenever(addTodoUseCase.invoke(org.mockito.kotlin.any())).thenReturn(1L)
 
         // Act
-        val result = viewModel.onCompleteAddTodoClicked()
+        val result = viewModel.onCompleteAddTodoClicked {}
         advanceUntilIdle()
 
         // Assert
@@ -198,6 +207,29 @@ class TodosMainScreenViewModelTest {
             Assert.assertEquals(description, todo.description)
             Assert.assertFalse(todo.isDone)
         })
+    }
+
+    @Test
+    fun onCompleteAddTodoClicked_addReminderSelected_navigatesToAddReminder() = runTest {
+        // Arrange
+        val title = "title"
+        val description = "description"
+        val addReminder = true
+        val todoId = 23L
+        viewModel.onStartAddTodoClicked()
+        val todoAdditionState = viewModel.getTodoAdditionState().value
+        todoAdditionState.onTitleChanged(title)
+        todoAdditionState.onDescriptionChanged(description)
+        todoAdditionState.onAddReminderChanged(addReminder)
+        whenever(addTodoUseCase.invoke(org.mockito.kotlin.any())).thenReturn(todoId)
+        val onNavigateToAddReminderMock = mock<(Long) -> Unit>()
+
+        // Act
+        viewModel.onCompleteAddTodoClicked(onNavigateToAddReminderMock)
+        advanceUntilIdle()
+
+        // Assert
+        verify(onNavigateToAddReminderMock, times(1))(todoId)
     }
 
     @Test

@@ -21,7 +21,31 @@ internal class TodoRepositoryTest {
     lateinit var todoDao: TodoDao
 
     @Test
-    fun observeTodos_returnTodosRetrievedViaDao() = runTest {
+    fun observeTodo_returnFlowOfTodoRetrievedViaDao() = runTest {
+        // Arrange
+        val testDispatcher = StandardTestDispatcher(testScheduler)
+        val repository = TodoRepository(
+            todoDao,
+            ioDispatcher = testDispatcher
+        )
+        val todo = Todo(
+            id = 1,
+            title = "title",
+            description = "description",
+            isDone = false
+        )
+        val todoFlow: Flow<Todo> = flowOf(todo)
+        whenever(todoDao.observeTodo(1)).thenReturn(todoFlow)
+
+        // Act
+        val result = repository.observeTodo(1)
+
+        // Assert
+        Assert.assertEquals(todoFlow, result)
+    }
+
+    @Test
+    fun observeTodos_returnFlowOfTodoListRetrievedViaDao() = runTest {
         // Arrange
         val testDispatcher = StandardTestDispatcher(testScheduler)
         val repository = TodoRepository(
