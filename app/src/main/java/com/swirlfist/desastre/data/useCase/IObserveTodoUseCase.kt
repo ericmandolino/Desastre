@@ -4,5 +4,5 @@ import com.swirlfist.desastre.data.model.Todo
 import kotlinx.coroutines.flow.Flow
 
 fun interface IObserveTodoUseCase {
-    fun invoke(todoId: Long): Flow<Todo?>
+    operator fun invoke(todoId: Long): Flow<Todo?>
 }

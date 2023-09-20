@@ -67,7 +67,7 @@ class TodosMainScreenViewModelTest {
     fun observeTodoList_returnsFlowOfTodoList() {
         // Arrange
         val todoListFlow: Flow<List<Todo>> = flowOf(listOf())
-        whenever(observeTodoListUseCase.invoke()).thenReturn(todoListFlow)
+        whenever(observeTodoListUseCase()).thenReturn(todoListFlow)
 
         // Act
         val result = viewModel.observeTodoList()
@@ -193,7 +193,7 @@ class TodosMainScreenViewModelTest {
         todoAdditionState.onTitleChanged(title)
         todoAdditionState.onDescriptionChanged(description)
         todoAdditionState.onAddReminderChanged(addReminder)
-        whenever(addTodoUseCase.invoke(org.mockito.kotlin.any())).thenReturn(1L)
+        whenever(addTodoUseCase(org.mockito.kotlin.any())).thenReturn(1L)
 
         // Act
         val result = viewModel.onCompleteAddTodoClicked {}
@@ -201,7 +201,7 @@ class TodosMainScreenViewModelTest {
 
         // Assert
         Assert.assertTrue(result)
-        verify(addTodoUseCase, times(1)).invoke(org.mockito.kotlin.check { todo ->
+        verify(addTodoUseCase, times(1))(org.mockito.kotlin.check { todo ->
             Assert.assertEquals(0, todo.id)
             Assert.assertEquals(title, todo.title)
             Assert.assertEquals(description, todo.description)
@@ -221,7 +221,7 @@ class TodosMainScreenViewModelTest {
         todoAdditionState.onTitleChanged(title)
         todoAdditionState.onDescriptionChanged(description)
         todoAdditionState.onAddReminderChanged(addReminder)
-        whenever(addTodoUseCase.invoke(org.mockito.kotlin.any())).thenReturn(todoId)
+        whenever(addTodoUseCase(org.mockito.kotlin.any())).thenReturn(todoId)
         val onNavigateToAddReminderMock = mock<(Long) -> Unit>()
 
         // Act
@@ -242,7 +242,7 @@ class TodosMainScreenViewModelTest {
         advanceUntilIdle()
 
         // Assert
-        verify(removeTodoUseCase, times(1)).invoke(todoId)
+        verify(removeTodoUseCase, times(1))(todoId)
     }
 
     @Test
@@ -258,7 +258,7 @@ class TodosMainScreenViewModelTest {
         advanceUntilIdle()
 
         // Assert
-        verify(removeTodoUseCase, never()).invoke(todoId)
+        verify(removeTodoUseCase, never())(todoId)
     }
 
     @Test

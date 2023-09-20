@@ -38,7 +38,7 @@ class TodosMainScreenViewModel @Inject constructor(
     private val todoAdditionState = MutableStateFlow(createTodoAdditionState())
 
     fun observeTodoList(): Flow<List<Todo>> {
-        return observeTodoListUseCase.invoke()
+        return observeTodoListUseCase()
     }
 
     fun getTodoAdditionState(): StateFlow<TodoAdditionState> {
@@ -76,7 +76,7 @@ class TodosMainScreenViewModel @Inject constructor(
         )
 
         viewModelScope.launch {
-            val todoId = addTodoUseCase.invoke(todo)
+            val todoId = addTodoUseCase(todo)
             if (!newTodoAddition.addReminder) {
                 return@launch
             }
@@ -99,7 +99,7 @@ class TodosMainScreenViewModel @Inject constructor(
             todoId = id,
             delayMilliseconds = UNDO_TODO_REMOVAL_MILLISECONDS
         )
-        removeTodoUseCase.invoke(id)
+        removeTodoUseCase(id)
         delayedTodoRemovalJobs.remove(id)
     }
 

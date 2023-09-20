@@ -12,6 +12,6 @@ class AddOrEditReminderScreenViewModel @Inject constructor(
     private val observeTodoUseCase: IObserveTodoUseCase,
 ) : ViewModel()  {
     fun observeTodo(todoId: Long): Flow<Todo?> {
-        return observeTodoUseCase.invoke(todoId)
+        return observeTodoUseCase(todoId)
     }
 }
