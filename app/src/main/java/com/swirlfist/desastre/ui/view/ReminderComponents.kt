@@ -60,7 +60,9 @@ import java.time.ZoneId
 private const val MIN_REMINDER_MINUTES = 60L
 
 @Composable
-fun DaySelector() {
+fun DaySelector(
+    onDateSelected: (LocalDate) -> Unit,
+) {
     var showDatePickerDialog by rememberSaveable { mutableStateOf(false) }
     Column(
         modifier = Modifier
@@ -74,12 +76,18 @@ fun DaySelector() {
             .padding(8.dp)
 
         PickerElementWrapper {
-            TodayTomorrow(modifier = childModifier)
+            TodayTomorrow(
+                modifier = childModifier,
+                onDateSelected,
+            )
         }
         PickerElementWrapper {
             AmountOfTimeSelector(
                 modifier = childModifier,
                 forToday = false,
+                onAmountOfTimeSelected = { amount, reminderTimeUnit ->
+                    onDateSelected(getDateFromToday(amount, reminderTimeUnit))
+                },
             )
         }
         PickerElementWrapper {
@@ -91,7 +99,8 @@ fun DaySelector() {
         }
         if (showDatePickerDialog) {
             DatePicker(
-                onDismiss = { showDatePickerDialog = false }
+                onDismiss = { showDatePickerDialog = false },
+                onDateSelected,
             )
         }
     }
@@ -118,6 +127,7 @@ fun TimeSelector(
                 AmountOfTimeSelector(
                     modifier = childModifier,
                     forToday = true,
+                    onAmountOfTimeSelected = { amount, reminderTimeUnit -> Log.d("gus", "$amount : $reminderTimeUnit") },
                 )
             }
         }
@@ -156,6 +166,7 @@ fun PickerElementWrapper(
 @Composable
 fun TodayTomorrow(
     modifier: Modifier,
+    onDateSelected: (LocalDate) -> Unit,
 ) {
     Row(
         horizontalArrangement = Arrangement.spacedBy(
@@ -164,13 +175,13 @@ fun TodayTomorrow(
         ),
         modifier = modifier,
     ) {
-        Button(onClick = { /*TODO*/ }) {
+        Button(onClick = { onDateSelected(LocalDate.now()) }) {
             Text(
                 text = stringResource(R.string.today),
                 style = MaterialTheme.typography.bodyMedium,
             )
         }
-        Button(onClick = { /*TODO*/ }) {
+        Button(onClick = { onDateSelected(LocalDate.now().plusDays(1)) }) {
             Text(
                 text = stringResource(R.string.tomorrow),
                 style = MaterialTheme.typography.bodyMedium,
@@ -183,6 +194,7 @@ fun TodayTomorrow(
 fun AmountOfTimeSelector(
     modifier: Modifier,
     forToday: Boolean,
+    onAmountOfTimeSelected: (Int, ReminderTimeUnit) -> Unit,
 ) {
     var amount by rememberSaveable { mutableStateOf<Int?>(1) }
     var chosenReminderTimeUnit by rememberSaveable {
@@ -230,7 +242,7 @@ fun AmountOfTimeSelector(
             )
         }
         Button(
-            onClick = { /*TODO*/ },
+            onClick = { onAmountOfTimeSelected(amount ?: 1, chosenReminderTimeUnit) },
             enabled = isValidSelectedAmount(forToday, amount ?: 1, chosenReminderTimeUnit)
         ) {
             val timeFromNow = pluralStringResource(
@@ -364,6 +376,7 @@ fun ChooseOption(
 @Composable
 fun DatePicker(
     onDismiss: () -> Unit,
+    onDateSelected: (LocalDate) -> Unit,
 ) {
     val datePickerState = rememberDatePickerState()
     val confirmEnabled = derivedStateOf { datePickerState.selectedDateMillis != null }
@@ -372,8 +385,11 @@ fun DatePicker(
         confirmButton = {
             Button(
                 onClick = {
-                    /* TODO */
-                    Log.d("gus", "${datePickerState.selectedDateMillis}")
+                    if (datePickerState.selectedDateMillis != null) {
+                        onDateSelected(LocalDate.from(
+                            Instant.ofEpochMilli(datePickerState.selectedDateMillis!!)
+                                .atZone(ZoneId.systemDefault())))
+                    }
                 },
                 enabled = confirmEnabled.value
             ) {
@@ -515,11 +531,24 @@ private fun isValidSelectedTime(
     return selected.isAfter(min)
 }
 
+private fun getDateFromToday(
+    amount: Int,
+    reminderTimeUnit: ReminderTimeUnit
+): LocalDate {
+    return when(reminderTimeUnit) {
+        ReminderTimeUnit.Day -> LocalDate.now().plusDays(amount.toLong())
+        ReminderTimeUnit.Week -> LocalDate.now().plusWeeks(amount.toLong())
+        ReminderTimeUnit.Month -> LocalDate.now().plusMonths(amount.toLong())
+        ReminderTimeUnit.Year -> LocalDate.now().plusYears(amount.toLong())
+        else -> LocalDate.now()
+    }
+}
+
 @Preview(widthDp = 320, showBackground = true)
 @Composable
 fun DaySelectorPreview() {
     DesastreTheme {
-        DaySelector()
+        DaySelector { selectedDate -> Log.d("gus", "$selectedDate") }
     }
 }
 
@@ -529,6 +558,7 @@ fun DatePickerPreview() {
     DesastreTheme {
         DatePicker(
             onDismiss = {},
+            onDateSelected = { selectedDate -> Log.d("gus", "$selectedDate") }
         )
     }
 }

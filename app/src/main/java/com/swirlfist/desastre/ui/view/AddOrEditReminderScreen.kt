@@ -14,5 +14,5 @@ fun AddOrEditReminderScreen(
 ) {
     val todo = if (todoId != null) addOrEditReminderScreenViewModel.observeTodo(todoId).collectAsState(initial = null).value else null
     Log.e("gus", "add/edit reminder for '${todo?.title}', id: $todoId")
-    DaySelector()
+    DaySelector { selectedDate -> Log.d("gus", "$selectedDate") }
 }
