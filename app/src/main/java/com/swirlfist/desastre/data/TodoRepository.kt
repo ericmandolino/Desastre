@@ -1,6 +1,8 @@
 package com.swirlfist.desastre.data
 
+import com.swirlfist.desastre.data.db.ReminderDao
 import com.swirlfist.desastre.data.db.TodoDao
+import com.swirlfist.desastre.data.model.Reminder
 import com.swirlfist.desastre.data.model.Todo
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
@@ -9,6 +11,7 @@ import javax.inject.Inject
 
 class TodoRepository @Inject constructor(
     private val todoDao: TodoDao,
+    private val reminderDao: ReminderDao,
     private val ioDispatcher: CoroutineDispatcher,
 ) : ITodoRepository {
     override fun observeTodo(todoId: Long): Flow<Todo?> {
@@ -25,5 +28,18 @@ class TodoRepository @Inject constructor(
 
     override suspend fun removeTodo(id: Long) = withContext(ioDispatcher) {
         todoDao.delete(id)
+    }
+
+    override fun observeReminder(id: Long): Flow<Reminder?> {
+        return reminderDao.observeReminder(id)
+    }
+    override fun observeRemindersForTodo(todoId: Long): Flow<List<Reminder>> {
+        return reminderDao.observeRemindersForTodo(todoId)
+    }
+    override suspend fun addReminder(reminder: Reminder): Long = withContext(ioDispatcher) {
+        reminderDao.insert(reminder)
+    }
+    override suspend fun removeReminder(id: Long) = withContext(ioDispatcher) {
+        reminderDao.delete(id)
     }
 }

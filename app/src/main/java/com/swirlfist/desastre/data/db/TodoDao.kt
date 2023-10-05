@@ -10,13 +10,13 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface TodoDao {
     @Insert
-    fun insert(todo: Todo): Long
+    suspend fun insert(todo: Todo): Long
 
     @Delete
-    fun delete(todo: Todo)
+    suspend fun delete(todo: Todo)
 
     @Query("DELETE FROM todos WHERE id=:todoId")
-    fun delete(todoId: Long)
+    suspend fun delete(todoId: Long)
 
     @Query("SELECT * FROM todos")
     fun observeAll(): Flow<List<Todo>>
