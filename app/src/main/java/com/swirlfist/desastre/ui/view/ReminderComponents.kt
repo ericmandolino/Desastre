@@ -6,6 +6,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -54,6 +56,7 @@ import com.swirlfist.desastre.data.model.ReminderTimeUnit
 import com.swirlfist.desastre.ui.theme.DesastreTheme
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
 
@@ -109,6 +112,7 @@ fun DaySelector(
 @Composable
 fun TimeSelector(
     forToday: Boolean,
+    onTimeSelected: (localDateTime: LocalDateTime) -> Unit,
 ) {
     var showTimePickerDialog by rememberSaveable { mutableStateOf(false) }
     Column(
@@ -121,16 +125,28 @@ fun TimeSelector(
         val childModifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
+        val hours = arrayOf(9, 12, 15, 18, 21).filter { hour -> !forToday || LocalTime.now().hour < hour }
 
         if (forToday) {
             PickerElementWrapper {
                 AmountOfTimeSelector(
                     modifier = childModifier,
                     forToday = true,
-                    onAmountOfTimeSelected = { amount, reminderTimeUnit -> Log.d("gus", "$amount : $reminderTimeUnit") },
+                    onAmountOfTimeSelected = { amount, reminderTimeUnit -> onTimeSelected(getTimeFromNow(amount, reminderTimeUnit)) },
                 )
             }
         }
+
+        if (hours.isNotEmpty()) {
+            PickerElementWrapper {
+                PresetTimes(
+                    modifier = childModifier,
+                    hours,
+                    onTimeSelected,
+                )
+            }
+        }
+
         PickerElementWrapper {
             PickerSelector(
                 modifier = childModifier,
@@ -141,6 +157,7 @@ fun TimeSelector(
         if (showTimePickerDialog) {
             TimePicker(
                 forToday,
+                onTimeSelected,
                 onDismiss = { showTimePickerDialog = false }
             )
         }
@@ -163,12 +180,13 @@ fun PickerElementWrapper(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun TodayTomorrow(
     modifier: Modifier,
     onDateSelected: (LocalDate) -> Unit,
 ) {
-    Row(
+    FlowRow(
         horizontalArrangement = Arrangement.spacedBy(
             space = 8.dp,
             alignment = Alignment.CenterHorizontally,
@@ -416,11 +434,45 @@ fun DatePicker(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun PresetTimes(
+    modifier: Modifier,
+    hours: List<Int>,
+    onTimeSelected: (localDateTime: LocalDateTime) -> Unit,
+) {
+    FlowRow(
+        horizontalArrangement = Arrangement.spacedBy(
+            space = 8.dp,
+            alignment = Alignment.CenterHorizontally,
+        ),
+
+        modifier = modifier,
+    ) {
+        hours.forEach { hour -> PresetTimeButton(onTimeSelected, hour) }
+    }
+}
+
+@Composable
+fun PresetTimeButton(
+    onTimeSelected: (localDateTime: LocalDateTime) -> Unit,
+    hour: Int,
+    minute: Int = 0,
+) {
+    Button(onClick = { onTimeSelected(LocalDateTime.of(LocalDate.now(), LocalTime.of(hour, minute))) }) {
+        Text(
+            text = "${"%02d".format(hour)}:${"%02d".format(minute)}",
+            style = MaterialTheme.typography.bodyMedium,
+        )
+    }
+}
+
 @SuppressLint("UnrememberedMutableState")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TimePicker(
     forToday: Boolean,
+    onTimeSelected: (localDateTime: LocalDateTime) -> Unit,
     onDismiss: () -> Unit,
 ) {
     val timePickerState = rememberTimePickerState(is24Hour = true)
@@ -429,8 +481,7 @@ fun TimePicker(
     TimePickerDialog(
         onCancel = onDismiss,
         onConfirm = {
-            /* TODO */
-            Log.d("gus", "${timePickerState.hour}:${timePickerState.minute}")
+            onTimeSelected(LocalDateTime.of(LocalDate.now(), LocalTime.of(timePickerState.hour, timePickerState.minute)))
         },
         validSelectedTime = isValidSelectedTime(forToday, timePickerState.hour, timePickerState.minute)
     ) {
@@ -544,6 +595,17 @@ private fun getDateFromToday(
     }
 }
 
+private fun getTimeFromNow(
+    amount: Int,
+    reminderTimeUnit: ReminderTimeUnit
+): LocalDateTime {
+    return when(reminderTimeUnit) {
+        ReminderTimeUnit.Minute -> LocalDateTime.now().plusMinutes(amount.toLong())
+        ReminderTimeUnit.Hour -> LocalDateTime.now().plusHours(amount.toLong())
+        else -> LocalDateTime.now()
+    }
+}
+
 @Preview(widthDp = 320, showBackground = true)
 @Composable
 fun DaySelectorPreview() {
@@ -565,20 +627,36 @@ fun DatePickerPreview() {
 
 @Preview(widthDp = 320, showBackground = true)
 @Composable
-fun TimeSelectorPreview() {
+fun TimeSelectorForTodayPreview() {
     DesastreTheme {
-        TimeSelector(true)
+        TimeSelector(
+            forToday = true,
+            onTimeSelected = { selectedTime -> Log.d("gus", "$selectedTime") }
+        )
+    }
+}
+
+@Preview(widthDp = 320, showBackground = true)
+@Composable
+fun TimeSelectorNotForTodayPreview() {
+    DesastreTheme {
+        TimeSelector(
+            forToday = false,
+            onTimeSelected = { selectedTime -> Log.d("gus", "$selectedTime") }
+        )
     }
 }
 
 @Preview(name="time-picker", showBackground = true, heightDp = 640)
 @Preview(name="time-input", showBackground = true, widthDp = 320, heightDp = 320)
 @Composable
-fun TimePickerPreview() {
+fun TimePickerForTodayPreview() {
     DesastreTheme {
         TimePicker(
             forToday = true,
+            onTimeSelected = { selectedTime -> Log.d("gus", "$selectedTime") },
             onDismiss = {},
         )
     }
 }
+
