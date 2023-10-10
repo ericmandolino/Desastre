@@ -116,6 +116,7 @@ fun DaySelector(
 fun TimeSelector(
     forToday: Boolean,
     onTimeSelected: (localDateTime: LocalDateTime) -> Unit,
+    initialTime: LocalTime? = null,
 ) {
     var showTimePickerDialog by rememberSaveable { mutableStateOf(false) }
     Column(
@@ -161,7 +162,8 @@ fun TimeSelector(
             TimePicker(
                 forToday,
                 onTimeSelected,
-                onDismiss = { showTimePickerDialog = false }
+                onDismiss = { showTimePickerDialog = false },
+                initialTime,
             )
         }
     }
@@ -478,8 +480,13 @@ fun TimePicker(
     forToday: Boolean,
     onTimeSelected: (localDateTime: LocalDateTime) -> Unit,
     onDismiss: () -> Unit,
+    initialTime: LocalTime? = null,
 ) {
-    val timePickerState = rememberTimePickerState(is24Hour = true)
+    val timePickerState = rememberTimePickerState(
+        initialHour = initialTime?.hour ?: 0,
+        initialMinute = initialTime?.minute ?: 0,
+        is24Hour = true
+    )
     val configuration = LocalConfiguration.current
 
     TimePickerDialog(
