@@ -59,12 +59,14 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
+import java.time.ZoneOffset
 
 private const val MIN_REMINDER_MINUTES = 60L
 
 @Composable
 fun DaySelector(
     onDateSelected: (LocalDate) -> Unit,
+    initialDate: LocalDate? = null,
 ) {
     var showDatePickerDialog by rememberSaveable { mutableStateOf(false) }
     Column(
@@ -104,6 +106,7 @@ fun DaySelector(
             DatePicker(
                 onDismiss = { showDatePickerDialog = false },
                 onDateSelected,
+                initialDate,
             )
         }
     }
@@ -395,8 +398,9 @@ fun ChooseOption(
 fun DatePicker(
     onDismiss: () -> Unit,
     onDateSelected: (LocalDate) -> Unit,
+    initialDate: LocalDate? = null,
 ) {
-    val datePickerState = rememberDatePickerState()
+    val datePickerState = rememberDatePickerState(initialSelectedDateMillis = initialDate?.atStartOfDay()?.atOffset(ZoneOffset.UTC)?.toInstant()?.toEpochMilli())
     val confirmEnabled = derivedStateOf { datePickerState.selectedDateMillis != null }
     DatePickerDialog(
         onDismissRequest = onDismiss,
@@ -406,7 +410,7 @@ fun DatePicker(
                     if (datePickerState.selectedDateMillis != null) {
                         onDateSelected(LocalDate.from(
                             Instant.ofEpochMilli(datePickerState.selectedDateMillis!!)
-                                .atZone(ZoneId.systemDefault())))
+                                .atOffset(ZoneOffset.UTC)))
                     }
                 },
                 enabled = confirmEnabled.value
@@ -610,7 +614,7 @@ private fun getTimeFromNow(
 @Composable
 fun DaySelectorPreview() {
     DesastreTheme {
-        DaySelector { selectedDate -> Log.d("gus", "$selectedDate") }
+        DaySelector({ selectedDate -> Log.d("gus", "$selectedDate") })
     }
 }
 
