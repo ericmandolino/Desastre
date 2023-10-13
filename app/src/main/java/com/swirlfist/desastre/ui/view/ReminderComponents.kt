@@ -60,6 +60,7 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 
 private const val MIN_REMINDER_MINUTES = 60L
 
@@ -79,6 +80,17 @@ fun DaySelector(
         val childModifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
+
+        if (initialDate != null && !initialDate.isBefore(LocalDate.now())) {
+            PickerElementWrapper {
+                QuickSelection(
+                    modifier = childModifier,
+                    initialDate,
+                    { date -> date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) },
+                    onDateSelected,
+                )
+            }
+        }
 
         PickerElementWrapper {
             TodayTomorrow(
@@ -130,6 +142,16 @@ fun TimeSelector(
             .fillMaxWidth()
             .padding(8.dp)
         val hours = arrayOf(9, 12, 15, 18, 21).filter { hour -> !forToday || LocalTime.now().hour < hour }
+
+        if (!forToday && initialTime != null) {
+            PickerElementWrapper {
+                QuickSelection(
+                    modifier = childModifier,
+                    initialTime,
+                    { time -> time.format(DateTimeFormatter.ofPattern("HH:mm")) },
+                ) { time -> onTimeSelected(time.atDate(LocalDate.now())) }
+            }
+        }
 
         if (forToday) {
             PickerElementWrapper {
@@ -185,6 +207,27 @@ fun PickerElementWrapper(
     }
 }
 
+@Composable
+fun <T> QuickSelection(
+    modifier: Modifier,
+    value: T,
+    formatter: (T) -> String,
+    onSelected: (T) -> Unit,
+) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(
+            space = 8.dp,
+            alignment = Alignment.CenterHorizontally,
+        ),
+        modifier = modifier,
+    ) {
+        ReminderButton(
+            text = formatter(value),
+            onClick = { onSelected(value) }
+        )
+    }
+}
+
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun TodayTomorrow(
@@ -198,18 +241,8 @@ fun TodayTomorrow(
         ),
         modifier = modifier,
     ) {
-        Button(onClick = { onDateSelected(LocalDate.now()) }) {
-            Text(
-                text = stringResource(R.string.today),
-                style = MaterialTheme.typography.bodyMedium,
-            )
-        }
-        Button(onClick = { onDateSelected(LocalDate.now().plusDays(1)) }) {
-            Text(
-                text = stringResource(R.string.tomorrow),
-                style = MaterialTheme.typography.bodyMedium,
-            )
-        }
+        ReminderButton(stringResource(R.string.today)) { onDateSelected(LocalDate.now()) }
+        ReminderButton(stringResource(R.string.tomorrow)) { onDateSelected(LocalDate.now().plusDays(1)) }
     }
 }
 
@@ -264,29 +297,21 @@ fun AmountOfTimeSelector(
                     .width(144.dp),
             )
         }
-        Button(
-            onClick = { onAmountOfTimeSelected(amount ?: 1, chosenReminderTimeUnit) },
-            enabled = isValidSelectedAmount(forToday, amount ?: 1, chosenReminderTimeUnit)
-        ) {
-            val timeFromNow = pluralStringResource(
-                id = when (chosenReminderTimeUnit) {
-                    ReminderTimeUnit.Minute -> R.plurals.x_minutes
-                    ReminderTimeUnit.Hour -> R.plurals.x_hours
-                    ReminderTimeUnit.Day -> R.plurals.x_days
-                    ReminderTimeUnit.Week -> R.plurals.x_weeks
-                    ReminderTimeUnit.Month -> R.plurals.x_months
-                    ReminderTimeUnit.Year -> R.plurals.x_years
-                },
-                count = amount?: 1,
-            ).format(amount?: 1)
-            Text(
-                text = stringResource(
-                    R.string.time_from_now,
-                    timeFromNow,
-                ),
-                style = MaterialTheme.typography.bodyMedium,
-            )
-        }
+        val timeFromNow = pluralStringResource(
+            id = when (chosenReminderTimeUnit) {
+                ReminderTimeUnit.Minute -> R.plurals.x_minutes
+                ReminderTimeUnit.Hour -> R.plurals.x_hours
+                ReminderTimeUnit.Day -> R.plurals.x_days
+                ReminderTimeUnit.Week -> R.plurals.x_weeks
+                ReminderTimeUnit.Month -> R.plurals.x_months
+                ReminderTimeUnit.Year -> R.plurals.x_years
+            },
+            count = amount?: 1,
+        ).format(amount?: 1)
+        ReminderButton(
+            text = stringResource(R.string.time_from_now, timeFromNow),
+            enabled = isValidSelectedAmount(forToday, amount ?: 1, chosenReminderTimeUnit),
+        ) { onAmountOfTimeSelected(amount ?: 1, chosenReminderTimeUnit) }
     }
 }
 
@@ -300,14 +325,10 @@ fun PickerSelector(
         modifier = modifier,
         horizontalArrangement = Arrangement.Center,
     ) {
-        Button(
+        ReminderButton(
+            text,
             onClick = onShowPicker,
-        ) {
-            Text(
-                text,
-                style = MaterialTheme.typography.bodyMedium,
-            )
-        }
+        )
     }
 }
 
@@ -329,6 +350,23 @@ fun TypeAmount(
             keyboardType = KeyboardType.Number,
         ),
     )
+}
+
+@Composable
+fun ReminderButton(
+    text: String,
+    enabled: Boolean = true,
+    onClick: () -> Unit,
+) {
+    Button(
+        onClick = onClick,
+        enabled = enabled,
+    ) {
+        Text(
+            text,
+            style = MaterialTheme.typography.bodyMedium,
+        )
+    }
 }
 
 private fun processAmount(
@@ -465,11 +503,8 @@ fun PresetTimeButton(
     hour: Int,
     minute: Int = 0,
 ) {
-    Button(onClick = { onTimeSelected(LocalDateTime.of(LocalDate.now(), LocalTime.of(hour, minute))) }) {
-        Text(
-            text = "${"%02d".format(hour)}:${"%02d".format(minute)}",
-            style = MaterialTheme.typography.bodyMedium,
-        )
+    ReminderButton(text = "${"%02d".format(hour)}:${"%02d".format(minute)}") {
+        onTimeSelected(LocalDateTime.of(LocalDate.now(), LocalTime.of(hour, minute)))
     }
 }
 
