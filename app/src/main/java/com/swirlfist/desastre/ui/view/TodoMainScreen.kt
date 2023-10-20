@@ -38,10 +38,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -67,18 +63,15 @@ fun TodoMainScreen(
     todosMainScreenViewModel: TodosMainScreenViewModel = hiltViewModel(),
     onNavigateToAddReminder: (todoId: Long) -> Unit,
 ) {
-    var isAddingTodo by rememberSaveable { mutableStateOf(false) }
+    val isAddingTodo = todosMainScreenViewModel.getTodoAdditionState().collectAsState().value != null
 
     Scaffold(
         modifier = Modifier.padding(8.dp),
         content = { paddingValues ->  TodoMainScreenContent(
             todosMainScreenViewModel,
-            isAddingTodo,
             paddingValues,
             onCompleteAddTodoClicked = {
-                if (todosMainScreenViewModel.onCompleteAddTodoClicked(onNavigateToAddReminder)) {
-                    isAddingTodo = false
-                }
+                todosMainScreenViewModel.onCompleteAddTodoClicked(onNavigateToAddReminder)
             }
         )},
         floatingActionButton = {
@@ -86,8 +79,9 @@ fun TodoMainScreen(
                 shape = MaterialTheme.shapes.large.copy(CornerSize(percent = 50)),
                 containerColor = MaterialTheme.colorScheme.secondary,
                 onClick = {
-                    isAddingTodo = !isAddingTodo
                     if (isAddingTodo) {
+                        todosMainScreenViewModel.onCancelAddTodoClicked()
+                    } else {
                         todosMainScreenViewModel.onStartAddTodoClicked()
                     }
                 },
@@ -105,11 +99,11 @@ fun TodoMainScreen(
 @Composable
 fun TodoMainScreenContent(
     todosMainScreenViewModel: TodosMainScreenViewModel,
-    isAddingTodo: Boolean,
     paddingValues: PaddingValues,
     onCompleteAddTodoClicked: () -> Unit,
 ) {
     val todos = todosMainScreenViewModel.observeTodoList().collectAsState(initial = listOf()).value
+    val todoAdditionState = todosMainScreenViewModel.getTodoAdditionState().collectAsState().value
     val undoableRemovalState = todosMainScreenViewModel.getUndoableRemovalState()
 
     Surface(
@@ -129,9 +123,10 @@ fun TodoMainScreenContent(
                     paddingValues,
                 )
             }
-            if (isAddingTodo) {
+
+            if (todoAdditionState != null) {
                 AddTodo(
-                    todosMainScreenViewModel.getTodoAdditionState().collectAsState().value,
+                    todoAdditionState,
                     onCompleteAddTodoClicked,
                 )
             }

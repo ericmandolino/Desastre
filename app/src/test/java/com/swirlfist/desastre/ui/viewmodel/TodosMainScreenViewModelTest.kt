@@ -77,12 +77,12 @@ class TodosMainScreenViewModelTest {
     }
 
     @Test
-    fun onStartAddTodoClicked_resetsTodoAdditionState() {
+    fun onStartAddTodoClicked_createsTodoAdditionState() {
         // Arrange
 
         // Act
         viewModel.onStartAddTodoClicked()
-        val todoAdditionState = viewModel.getTodoAdditionState().value
+        val todoAdditionState = viewModel.getTodoAdditionState().value!!
 
         // Assert
         Assert.assertEquals("", todoAdditionState.title)
@@ -92,15 +92,28 @@ class TodosMainScreenViewModelTest {
     }
 
     @Test
+    fun onCancelAddTodoClicked_todoAdditionStateCleared() {
+        // Arrange
+        viewModel.onStartAddTodoClicked()
+        Assert.assertNotNull(viewModel.getTodoAdditionState().value)
+
+        // Act
+        viewModel.onCancelAddTodoClicked()
+
+        // Assert
+        Assert.assertNull(viewModel.getTodoAdditionState().value)
+    }
+
+    @Test
     fun addingTodo_titleChanged_updatesTodoAdditionStateWithNewTitle() {
         // Arrange
         viewModel.onStartAddTodoClicked()
-        var todoAdditionState = viewModel.getTodoAdditionState().value
+        var todoAdditionState = viewModel.getTodoAdditionState().value!!
         val newTitle = "new title"
 
         // Act
         todoAdditionState.onTitleChanged(newTitle)
-        todoAdditionState = viewModel.getTodoAdditionState().value
+        todoAdditionState = viewModel.getTodoAdditionState().value!!
 
         // Assert
         Assert.assertEquals(newTitle, todoAdditionState.title)
@@ -110,12 +123,12 @@ class TodosMainScreenViewModelTest {
     fun addingTodo_titleChangedLong_updatesTodoAdditionStateWithTruncatedTitle() {
         // Arrange
         viewModel.onStartAddTodoClicked()
-        var todoAdditionState = viewModel.getTodoAdditionState().value
+        var todoAdditionState = viewModel.getTodoAdditionState().value!!
         val newTitle = mockString(55)
 
         // Act
         todoAdditionState.onTitleChanged(newTitle)
-        todoAdditionState = viewModel.getTodoAdditionState().value
+        todoAdditionState = viewModel.getTodoAdditionState().value!!
 
         // Assert
         Assert.assertEquals(newTitle.substring(0, 50), todoAdditionState.title)
@@ -125,12 +138,12 @@ class TodosMainScreenViewModelTest {
     fun addingTodo_descriptionChanged_updatesTodoAdditionStateWithNewDescription() {
         // Arrange
         viewModel.onStartAddTodoClicked()
-        var todoAdditionState = viewModel.getTodoAdditionState().value
+        var todoAdditionState = viewModel.getTodoAdditionState().value!!
         val newDescription = "new description"
 
         // Act
         todoAdditionState.onDescriptionChanged(newDescription)
-        todoAdditionState = viewModel.getTodoAdditionState().value
+        todoAdditionState = viewModel.getTodoAdditionState().value!!
 
         // Assert
         Assert.assertEquals(newDescription, todoAdditionState.description)
@@ -140,12 +153,12 @@ class TodosMainScreenViewModelTest {
     fun addingTodo_descriptionChangedLong_updatesTodoAdditionStateWithTruncatedDescription() {
         // Arrange
         viewModel.onStartAddTodoClicked()
-        var todoAdditionState = viewModel.getTodoAdditionState().value
+        var todoAdditionState = viewModel.getTodoAdditionState().value!!
         val newDescription = mockString(2010)
 
         // Act
         todoAdditionState.onDescriptionChanged(newDescription)
-        todoAdditionState = viewModel.getTodoAdditionState().value
+        todoAdditionState = viewModel.getTodoAdditionState().value!!
 
         // Assert
         Assert.assertEquals(newDescription.substring(0, 2000), todoAdditionState.description)
@@ -155,12 +168,12 @@ class TodosMainScreenViewModelTest {
     fun addingTodo_addReminderChanged_updatesTodoAdditionStateWithNewValue() {
         // Arrange
         viewModel.onStartAddTodoClicked()
-        var todoAdditionState = viewModel.getTodoAdditionState().value
+        var todoAdditionState = viewModel.getTodoAdditionState().value!!
 
         // Act
         todoAdditionState.onAddReminderChanged(false)
         todoAdditionState.onAddReminderChanged(true)
-        todoAdditionState = viewModel.getTodoAdditionState().value
+        todoAdditionState = viewModel.getTodoAdditionState().value!!
 
         // Assert
         Assert.assertTrue(todoAdditionState.addReminder)
@@ -170,15 +183,14 @@ class TodosMainScreenViewModelTest {
     fun onCompleteAddTodoClicked_emptyTitle_updatesTodoAdditionStateWithError() {
         // Arrange
         viewModel.onStartAddTodoClicked()
-        var todoAdditionState = viewModel.getTodoAdditionState().value
+        var todoAdditionState = viewModel.getTodoAdditionState().value!!
 
         // Act
         todoAdditionState.onTitleChanged("")
-        val result = viewModel.onCompleteAddTodoClicked {}
-        todoAdditionState = viewModel.getTodoAdditionState().value
+        viewModel.onCompleteAddTodoClicked {}
+        todoAdditionState = viewModel.getTodoAdditionState().value!!
 
         // Assert
-        Assert.assertFalse(result)
         Assert.assertTrue(todoAdditionState.showTitleEmptyValidationError)
     }
 
@@ -189,24 +201,40 @@ class TodosMainScreenViewModelTest {
         val description = "description"
         val addReminder = true
         viewModel.onStartAddTodoClicked()
-        val todoAdditionState = viewModel.getTodoAdditionState().value
+        val todoAdditionState = viewModel.getTodoAdditionState().value!!
         todoAdditionState.onTitleChanged(title)
         todoAdditionState.onDescriptionChanged(description)
         todoAdditionState.onAddReminderChanged(addReminder)
         whenever(addTodoUseCase(org.mockito.kotlin.any())).thenReturn(1L)
 
         // Act
-        val result = viewModel.onCompleteAddTodoClicked {}
+        viewModel.onCompleteAddTodoClicked {}
         advanceUntilIdle()
 
         // Assert
-        Assert.assertTrue(result)
         verify(addTodoUseCase, times(1))(org.mockito.kotlin.check { todo ->
             Assert.assertEquals(0, todo.id)
             Assert.assertEquals(title, todo.title)
             Assert.assertEquals(description, todo.description)
             Assert.assertFalse(todo.isDone)
         })
+    }
+
+    @Test
+    fun onCompleteAddTodoClicked_todoAdditionStateCleared() = runTest {
+        // Arrange
+        val title = "title"
+        viewModel.onStartAddTodoClicked()
+        val todoAdditionState = viewModel.getTodoAdditionState().value!!
+        todoAdditionState.onTitleChanged(title)
+        whenever(addTodoUseCase(org.mockito.kotlin.any())).thenReturn(1L)
+
+        // Act
+        viewModel.onCompleteAddTodoClicked {}
+        advanceUntilIdle()
+
+        // Assert
+        Assert.assertNull(viewModel.getTodoAdditionState().value)
     }
 
     @Test
@@ -217,7 +245,7 @@ class TodosMainScreenViewModelTest {
         val addReminder = true
         val todoId = 23L
         viewModel.onStartAddTodoClicked()
-        val todoAdditionState = viewModel.getTodoAdditionState().value
+        val todoAdditionState = viewModel.getTodoAdditionState().value!!
         todoAdditionState.onTitleChanged(title)
         todoAdditionState.onDescriptionChanged(description)
         todoAdditionState.onAddReminderChanged(addReminder)
