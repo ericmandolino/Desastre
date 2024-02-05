@@ -1,8 +1,5 @@
 package com.swirlfist.desastre.ui.viewmodel
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.swirlfist.desastre.data.ICoroutineDispatcherProvider
@@ -35,8 +32,10 @@ class TodosMainScreenViewModel @Inject constructor(
     private val addTodoUseCase: IAddTodoUseCase,
     private val removeTodoUseCase: IRemoveTodoUseCase,
 ) : ViewModel()  {
-    private var undoableTodoRemovals by mutableStateOf(mapOf<Long, Int>())
     private val delayedTodoRemovalJobs = mutableMapOf<Long, Job>()
+
+    private val _undoTodoRemovalState = MutableStateFlow(UndoTodoRemovalState())
+    val undoTodoRemovalState = _undoTodoRemovalState as StateFlow<UndoTodoRemovalState>
 
     private val _todoAdditionState = MutableStateFlow<TodoAdditionState?>(null)
     val todoAdditionState = _todoAdditionState as StateFlow<TodoAdditionState?>
@@ -58,13 +57,13 @@ class TodosMainScreenViewModel @Inject constructor(
         }
     }
 
-    fun onCancelAddTodoClicked() {
+    fun cancelAddTodo() {
         _todoAdditionState.update {
             null
         }
     }
 
-    fun onCompleteAddTodoClicked(
+    fun completeAddTodo(
         onNavigateToAddReminder: (todoId: Long) -> Unit,
     ) {
         val newTodoAddition = todoAdditionState.value ?: return
@@ -103,40 +102,36 @@ class TodosMainScreenViewModel @Inject constructor(
     }
 
     fun removeTodo(id: Long) {
-        undoableTodoRemovals = undoableTodoRemovals + mapOf(Pair(id, 0))
+        _undoTodoRemovalState.update { state ->
+            state.copy(
+                undoableTodoRemovals = state.undoableTodoRemovals + id
+            )
+        }
         val removalJob = viewModelScope.launch { delayedRemoveTodo(id) }
         delayedTodoRemovalJobs[id] = removalJob
     }
 
     private suspend fun delayedRemoveTodo(id: Long) {
-        delayWithProgressUpdate(
-            todoId = id,
-            delayMilliseconds = UNDO_TODO_REMOVAL_MILLISECONDS
-        )
-        removeTodoUseCase(id)
+        delay(UNDO_TODO_REMOVAL_MILLISECONDS)
         delayedTodoRemovalJobs.remove(id)
-    }
-
-    private suspend fun delayWithProgressUpdate(
-        todoId: Long,
-        delayMilliseconds: Long,
-    ) {
-        val onePercentDelay = delayMilliseconds / 100
-        for (i in 1..100) {
-            delay(onePercentDelay)
-            val currentProgress = undoableTodoRemovals[todoId]?: 0
-            undoableTodoRemovals = undoableTodoRemovals - todoId
-            undoableTodoRemovals = undoableTodoRemovals + Pair(todoId, currentProgress + 1)
+        _undoTodoRemovalState.update { state ->
+            state.copy(
+                undoableTodoRemovals = state.undoableTodoRemovals - id
+            )
         }
+        removeTodoUseCase(id)
     }
 
-    fun getUndoableRemovalState(): UndoableTodoRemovalState {
-        return UndoableTodoRemovalState(
-            undoableTodoRemovals,
-            onUndoClicked = { todoId ->
-                delayedTodoRemovalJobs.remove(todoId)?.cancel()
-                undoableTodoRemovals = undoableTodoRemovals - todoId },
-        )
+    fun undoTodoRemoval() {
+        delayedTodoRemovalJobs.values.forEach { job ->
+            job.cancel()
+        }
+        delayedTodoRemovalJobs.clear()
+        _undoTodoRemovalState.update { state ->
+            state.copy(
+                undoableTodoRemovals = listOf()
+            )
+        }
     }
 
     fun editReminder(reminder: Reminder?) {
