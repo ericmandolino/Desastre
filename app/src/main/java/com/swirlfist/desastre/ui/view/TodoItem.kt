@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -44,8 +43,7 @@ fun TodoItem(
 ) {
     Card(
         modifier = Modifier
-            .fillMaxWidth()
-            .height(200.dp),
+            .fillMaxWidth(),
     ) {
         Column(
             modifier = Modifier
@@ -73,14 +71,14 @@ fun TodoItem(
                     )
                 }
             }
-            Text(
-                text = todo.description,
-                style = MaterialTheme.typography.bodyMedium,
-                maxLines = 4,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier
-                    .weight(1f),
-            )
+            if (todo.description.isNotEmpty()) {
+                Text(
+                    text = todo.description,
+                    style = MaterialTheme.typography.bodyMedium,
+                    maxLines = 4,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
             TodoReminders(reminders, onReminderClick)
         }
     }
@@ -130,7 +128,24 @@ fun ReminderItem(
 
 @Preview(showBackground = true, widthDp = 320)
 @Composable
-fun TodoItemPreview() {
+fun TodoItemNoDescriptionPreview() {
+    DesastreTheme {
+        TodoItem(
+            todo = PreviewUtil.mockTodo(
+                title = "Aliquid facilis aperiam itaque et cumque sed totam est.",
+                description = "",
+                isDone = false,
+            ),
+            reminders = PreviewUtil.mockReminders(4),
+            onRemove = {},
+            onReminderClick = {},
+        )
+    }
+}
+
+@Preview(showBackground = true, widthDp = 320)
+@Composable
+fun TodoItemLongDescriptionPreview() {
     DesastreTheme {
         TodoItem(
             todo = PreviewUtil.mockTodo(
