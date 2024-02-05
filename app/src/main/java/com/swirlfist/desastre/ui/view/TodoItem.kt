@@ -11,9 +11,12 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -26,17 +29,27 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.swirlfist.desastre.R
+import com.swirlfist.desastre.data.model.Reminder
 import com.swirlfist.desastre.data.model.Todo
 import com.swirlfist.desastre.ui.theme.DesastreTheme
+import com.swirlfist.desastre.util.isForToday
+import com.swirlfist.desastre.util.isForTomorrow
+import com.swirlfist.desastre.util.isInThePast
+import com.swirlfist.desastre.util.toShortFormat
+import java.time.LocalDate
+import java.time.LocalTime
 
 @Composable
 fun TodoItem(
     todo: Todo,
+    reminders: List<Reminder>,
     onRemove: (Long) -> Unit,
+    onReminderClick: (Reminder) -> Unit,
 ) {
     Card(
         modifier = Modifier
@@ -74,8 +87,53 @@ fun TodoItem(
                 style = MaterialTheme.typography.bodyMedium,
                 maxLines = 4,
                 overflow = TextOverflow.Ellipsis,
+                modifier = Modifier
+                    .weight(1f),
             )
+            TodoReminders(reminders, onReminderClick)
         }
+    }
+}
+
+@Composable
+fun TodoReminders(
+    reminders: List<Reminder>,
+    onReminderClick: (Reminder) -> Unit,
+) {
+    LazyRow(
+        userScrollEnabled = true,
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        items(reminders) { reminder ->
+            ReminderItem(reminder, onReminderClick)
+        }
+    }
+}
+
+@Composable
+fun ReminderItem(
+    reminder: Reminder,
+    onReminderClick: (Reminder) -> Unit,
+) {
+
+    val dateText = if (reminder.isForToday()) {
+        stringResource(R.string.today)
+    } else if (reminder.isForTomorrow()) {
+        stringResource(id = R.string.tomorrow)
+    } else {
+        LocalDate.of(reminder.year, reminder.month, reminder.day).toShortFormat()
+    }
+
+    val timeText = LocalTime.of(reminder.hour, reminder.minute).toShortFormat()
+
+    Button(onClick = { onReminderClick(reminder) }) {
+        Text(
+            text = "$dateText @ $timeText",
+            style = if (!reminder.isInThePast()) MaterialTheme.typography.bodySmall
+            else MaterialTheme.typography.bodySmall.copy(
+                textDecoration = TextDecoration.LineThrough
+            ),
+        )
     }
 }
 
@@ -135,8 +193,42 @@ fun TodoItemPreview() {
                 description = "Aliquid facilis aperiam itaque et cumque sed totam est. Esse soluta modi perspiciatis. Placeat quis cum et enim. Quia reiciendis reprehenderit atque. Ea quaerat id nihil repudiandae. Et tenetur consectetur ad ipsa quia.",
                 isDone = false,
             ),
+            reminders = PreviewUtil.mockReminders(4),
             onRemove = {},
+            onReminderClick = {},
         )
+    }
+}
+
+@Preview
+@Composable
+fun ReminderItemPreview() {
+    DesastreTheme {
+        ReminderItem(PreviewUtil.mockReminder()) {}
+    }
+}
+
+@Preview
+@Composable
+fun ReminderItemTodayPreview() {
+    DesastreTheme {
+        ReminderItem(PreviewUtil.mockTodayReminder()) {}
+    }
+}
+
+@Preview
+@Composable
+fun ReminderItemTomorrowPreview() {
+    DesastreTheme {
+        ReminderItem(PreviewUtil.mockTomorrowReminder()) {}
+    }
+}
+
+@Preview
+@Composable
+fun ReminderItemPastPreview() {
+    DesastreTheme {
+        ReminderItem(PreviewUtil.mockYesterdayReminder()) {}
     }
 }
 

@@ -6,8 +6,10 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.swirlfist.desastre.data.ICoroutineDispatcherProvider
+import com.swirlfist.desastre.data.model.Reminder
 import com.swirlfist.desastre.data.model.Todo
 import com.swirlfist.desastre.data.useCase.IAddTodoUseCase
+import com.swirlfist.desastre.data.useCase.IObserveRemindersForTodoUseCase
 import com.swirlfist.desastre.data.useCase.IObserveTodoListUseCase
 import com.swirlfist.desastre.data.useCase.IRemoveTodoUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -16,7 +18,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -30,29 +31,35 @@ private const val UNDO_TODO_REMOVAL_MILLISECONDS = 3000L
 class TodosMainScreenViewModel @Inject constructor(
     private val coroutineDispatcherProvider: ICoroutineDispatcherProvider,
     private val observeTodoListUseCase: IObserveTodoListUseCase,
+    private val observeRemindersForTodoUseCase: IObserveRemindersForTodoUseCase,
     private val addTodoUseCase: IAddTodoUseCase,
     private val removeTodoUseCase: IRemoveTodoUseCase,
 ) : ViewModel()  {
     private var undoableTodoRemovals by mutableStateOf(mapOf<Long, Int>())
-    private var delayedTodoRemovalJobs = mutableMapOf<Long, Job>()
-    private val todoAdditionState = MutableStateFlow<TodoAdditionState?>(null)
+    private val delayedTodoRemovalJobs = mutableMapOf<Long, Job>()
+
+    private val _todoAdditionState = MutableStateFlow<TodoAdditionState?>(null)
+    val todoAdditionState = _todoAdditionState as StateFlow<TodoAdditionState?>
+
+    private val _editReminderState = MutableStateFlow<Reminder?>(null)
+    val editReminderState = _editReminderState as StateFlow<Reminder?>
 
     fun observeTodoList(): Flow<List<Todo>> {
         return observeTodoListUseCase()
     }
 
-    fun getTodoAdditionState(): StateFlow<TodoAdditionState?> {
-        return todoAdditionState.asStateFlow()
+    fun observeRemindersForTodo(todoId: Long): Flow<List<Reminder>> {
+        return observeRemindersForTodoUseCase(todoId)
     }
 
     fun onStartAddTodoClicked() {
-        todoAdditionState.update {
+        _todoAdditionState.update {
             createTodoAdditionState()
         }
     }
 
     fun onCancelAddTodoClicked() {
-        todoAdditionState.update {
+        _todoAdditionState.update {
             null
         }
     }
@@ -63,7 +70,7 @@ class TodosMainScreenViewModel @Inject constructor(
         val newTodoAddition = todoAdditionState.value ?: return
 
         if (newTodoAddition.title.isEmpty()) {
-            todoAdditionState.update { state ->
+            _todoAdditionState.update { state ->
                 state?.copy(
                     showTitleEmptyValidationError = true,
                 )
@@ -88,7 +95,7 @@ class TodosMainScreenViewModel @Inject constructor(
             }
         }
 
-        todoAdditionState.update {
+        _todoAdditionState.update {
             null
         }
 
@@ -132,6 +139,10 @@ class TodosMainScreenViewModel @Inject constructor(
         )
     }
 
+    fun editReminder(reminder: Reminder?) {
+        _editReminderState.update { reminder }
+    }
+
     private fun createTodoAdditionState(): TodoAdditionState {
         return TodoAdditionState(
             title = "",
@@ -139,7 +150,7 @@ class TodosMainScreenViewModel @Inject constructor(
             description = "",
             addReminder = false,
             onTitleChanged = { title ->
-                todoAdditionState.update { state ->
+                _todoAdditionState.update { state ->
                     state?.copy(
                         title = truncateText(title, TITLE_MAX_CHARACTERS),
                         showTitleEmptyValidationError = false,
@@ -147,12 +158,12 @@ class TodosMainScreenViewModel @Inject constructor(
                 }
             },
             onDescriptionChanged = { description ->
-                todoAdditionState.update { state ->
+                _todoAdditionState.update { state ->
                     state?.copy(description = truncateText(description, DESCRIPTION_MAX_CHARACTERS))
                 }
             },
             onAddReminderChanged = { addReminder ->
-                todoAdditionState.update { state ->
+                _todoAdditionState.update { state ->
                     state?.copy(addReminder = addReminder)
                 }
             },

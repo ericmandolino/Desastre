@@ -16,6 +16,7 @@
     <string name="pick_a_date">Pick a date</string>
     <string name="pick_a_time">Pick a time</string>
     <string name="select_time">Select time</string>
+    <string name="not_found">Not found</string>
     <plurals name="minute">
         <item quantity="one">minute</item>
         <item quantity="other">minutes</item>

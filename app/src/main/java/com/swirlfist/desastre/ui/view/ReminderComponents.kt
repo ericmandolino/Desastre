@@ -54,13 +54,13 @@ import androidx.compose.ui.window.DialogProperties
 import com.swirlfist.desastre.R
 import com.swirlfist.desastre.data.model.ReminderTimeUnit
 import com.swirlfist.desastre.ui.theme.DesastreTheme
+import com.swirlfist.desastre.util.toShortFormat
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
 
 private const val MIN_REMINDER_MINUTES = 60L
 
@@ -86,7 +86,7 @@ fun DaySelector(
                 QuickSelection(
                     modifier = childModifier,
                     initialDate,
-                    { date -> date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) },
+                    { date -> date.toShortFormat() },
                     onDateSelected,
                 )
             }
@@ -148,7 +148,7 @@ fun TimeSelector(
                 QuickSelection(
                     modifier = childModifier,
                     initialTime,
-                    { time -> time.format(DateTimeFormatter.ofPattern("HH:mm")) },
+                    { time -> time.toShortFormat() },
                 ) { time -> onTimeSelected(time.atDate(LocalDate.now())) }
             }
         }
@@ -374,11 +374,11 @@ private fun processAmount(
     min: Int,
     max: Int,
 ): Int? {
-    val processedAmountStr = amountStr.replace(Regex.fromLiteral("[^0-9]+"), "")
+    val processedAmountStr = amountStr.replace(Regex("[^0-9]+"), "")
     if (processedAmountStr.isEmpty()) {
         return null
     }
-    val amount = amountStr.toInt()
+    val amount = processedAmountStr.toInt()
     return if (amount < min) min else if (amount > max) max else amount
 }
 
@@ -656,7 +656,7 @@ private fun getTimeFromNow(
 @Composable
 fun DaySelectorPreview() {
     DesastreTheme {
-        DaySelector({ selectedDate -> Log.d("gus", "$selectedDate") })
+        DaySelector({ selectedDate -> Log.d("Preview", "$selectedDate") })
     }
 }
 
@@ -666,7 +666,7 @@ fun DatePickerPreview() {
     DesastreTheme {
         DatePicker(
             onDismiss = {},
-            onDateSelected = { selectedDate -> Log.d("gus", "$selectedDate") }
+            onDateSelected = { selectedDate -> Log.d("Preview", "$selectedDate") }
         )
     }
 }
@@ -677,7 +677,7 @@ fun TimeSelectorForTodayPreview() {
     DesastreTheme {
         TimeSelector(
             forToday = true,
-            onTimeSelected = { selectedTime -> Log.d("gus", "$selectedTime") }
+            onTimeSelected = { selectedTime -> Log.d("Preview", "$selectedTime") }
         )
     }
 }
@@ -688,7 +688,7 @@ fun TimeSelectorNotForTodayPreview() {
     DesastreTheme {
         TimeSelector(
             forToday = false,
-            onTimeSelected = { selectedTime -> Log.d("gus", "$selectedTime") }
+            onTimeSelected = { selectedTime -> Log.d("Preview", "$selectedTime") }
         )
     }
 }
@@ -700,7 +700,7 @@ fun TimePickerForTodayPreview() {
     DesastreTheme {
         TimePicker(
             forToday = true,
-            onTimeSelected = { selectedTime -> Log.d("gus", "$selectedTime") },
+            onTimeSelected = { selectedTime -> Log.d("Preview", "$selectedTime") },
             onDismiss = {},
         )
     }

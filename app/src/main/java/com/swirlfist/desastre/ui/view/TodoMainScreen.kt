@@ -37,6 +37,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -52,18 +53,30 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.swirlfist.desastre.R
+import com.swirlfist.desastre.data.model.Reminder
 import com.swirlfist.desastre.data.model.Todo
 import com.swirlfist.desastre.ui.theme.DesastreTheme
 import com.swirlfist.desastre.ui.viewmodel.TodoAdditionState
 import com.swirlfist.desastre.ui.viewmodel.TodosMainScreenViewModel
 import com.swirlfist.desastre.ui.viewmodel.UndoableTodoRemovalState
+import java.time.LocalDateTime
+import kotlin.random.Random
 
 @Composable
 fun TodoMainScreen(
     todosMainScreenViewModel: TodosMainScreenViewModel = hiltViewModel(),
     onNavigateToAddReminder: (todoId: Long) -> Unit,
+    onNavigateToEditReminder: (todoId: Long, reminderId: Long) -> Unit,
 ) {
-    val isAddingTodo = todosMainScreenViewModel.getTodoAdditionState().collectAsState().value != null
+    val isAddingTodo = todosMainScreenViewModel.todoAdditionState.collectAsState().value != null
+    val reminderToEdit = todosMainScreenViewModel.editReminderState.collectAsState().value
+
+    LaunchedEffect(reminderToEdit) {
+        if (reminderToEdit != null) {
+            onNavigateToEditReminder(reminderToEdit.todoId, reminderToEdit.id)
+            todosMainScreenViewModel.editReminder(null)
+        }
+    }
 
     Scaffold(
         modifier = Modifier.padding(8.dp),
@@ -102,27 +115,33 @@ fun TodoMainScreenContent(
     paddingValues: PaddingValues,
     onCompleteAddTodoClicked: () -> Unit,
 ) {
-    val todos = todosMainScreenViewModel.observeTodoList().collectAsState(initial = listOf()).value
-    val todoAdditionState = todosMainScreenViewModel.getTodoAdditionState().collectAsState().value
+
+    val todoAdditionState = todosMainScreenViewModel.todoAdditionState.collectAsState().value
     val undoableRemovalState = todosMainScreenViewModel.getUndoableRemovalState()
 
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
+        val todos = todosMainScreenViewModel.observeTodoList().collectAsState(initial = listOf()).value
         Box {
-            if (todos.isEmpty()) {
-                EmptyTodoList()
-            } else {
-                TodoList(
-                    todos,
-                    onRemoveTodo = { todoId ->
-                        todosMainScreenViewModel.removeTodo(todoId)
-                    },
-                    undoableRemovalState,
-                    paddingValues,
-                )
-            }
+            TodoList(
+                todos,
+                getRemindersForTodo = { todo ->
+                    todosMainScreenViewModel
+                        .observeRemindersForTodo(todo.id)
+                        .collectAsState(initial = listOf())
+                        .value
+                },
+                onRemoveTodo = { todoId ->
+                    todosMainScreenViewModel.removeTodo(todoId)
+                },
+                onGoToReminder = { reminder ->
+                    todosMainScreenViewModel.editReminder(reminder)
+                },
+                undoableRemovalState,
+                paddingValues,
+            )
 
             if (todoAdditionState != null) {
                 AddTodo(
@@ -160,10 +179,17 @@ fun EmptyTodoList() {
 @Composable
 fun TodoList(
     todos: List<Todo>,
+    getRemindersForTodo: @Composable (Todo) -> List<Reminder>,
     onRemoveTodo: (Long) -> Unit,
+    onGoToReminder: (Reminder) -> Unit,
     undoableRemovalState: UndoableTodoRemovalState,
     paddingValues: PaddingValues,
 ) {
+    if (todos.isEmpty()) {
+        EmptyTodoList()
+        return
+    }
+
     LazyColumn(
         modifier = Modifier
             .padding(paddingValues),
@@ -181,9 +207,13 @@ fun TodoList(
                     onUndoClicked = undoableRemovalState.onUndoClicked,
                 )
             } else {
+                val reminders = getRemindersForTodo(todo)
+
                 TodoItem(
                     todo,
+                    reminders,
                     onRemoveTodo,
+                    onGoToReminder,
                 )
             }
         }
@@ -415,7 +445,26 @@ fun TodoListPreview() {
             todos = PreviewUtil.mockTodos(
                 size = 100
             ),
+            getRemindersForTodo = { todo ->
+                if (todo.id % 2 == 0L) {
+                    val tomorrow = LocalDateTime.now().plusDays(1)
+                    listOf(
+                        Reminder(
+                            id = Random.nextLong(),
+                            todoId = todo.id,
+                            minute = 15,
+                            hour = (todo.id.toInt() % 23L).toInt(),
+                            day = tomorrow.dayOfMonth,
+                            month = tomorrow.monthValue,
+                            year = tomorrow.year
+                        )
+                    )
+                } else {
+                    listOf()
+                }
+            },
             onRemoveTodo = {},
+            onGoToReminder = {},
             undoableRemovalState = UndoableTodoRemovalState(
                 undoableTodoRemovals = mapOf(),
                 onUndoClicked = {},
