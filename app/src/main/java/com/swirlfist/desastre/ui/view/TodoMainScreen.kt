@@ -77,14 +77,18 @@ fun TodoMainScreen(
 ) {
     val scope = rememberCoroutineScope()
     val isAddingTodo = todosMainScreenViewModel.todoAdditionState.collectAsState().value != null
+    val todoIdToGetNewReminder = todosMainScreenViewModel.addReminderState.collectAsState().value
     val reminderToEdit = todosMainScreenViewModel.editReminderState.collectAsState().value
     val undoTodoRemovalState = todosMainScreenViewModel.undoTodoRemovalState.collectAsState().value
     val snackbarHostState = remember { SnackbarHostState() }
     val todoRemovedString = stringResource(R.string.todo_removed)
     val undoString = stringResource(R.string.undo)
 
-    LaunchedEffect(reminderToEdit) {
-        if (reminderToEdit != null) {
+    LaunchedEffect(todoIdToGetNewReminder, reminderToEdit) {
+        if (todoIdToGetNewReminder != null) {
+            onNavigateToAddReminder(todoIdToGetNewReminder)
+            todosMainScreenViewModel.addReminderForTodo(null)
+        } else if (reminderToEdit != null) {
             onNavigateToEditReminder(reminderToEdit.todoId, reminderToEdit.id)
             todosMainScreenViewModel.editReminder(null)
         }
@@ -131,6 +135,7 @@ fun TodoMainScreen(
                 todosMainScreenViewModel.completeAddTodo(onNavigateToAddReminder)
             },
             onRemoveTodo = todosMainScreenViewModel::removeTodo,
+            onAddReminder = todosMainScreenViewModel::addReminderForTodo,
             onEditReminder = todosMainScreenViewModel::editReminder,
         )},
         floatingActionButton = {
@@ -167,6 +172,7 @@ fun TodoMainScreenContent(
     paddingValues: PaddingValues,
     onCompleteAddTodo: () -> Unit,
     onRemoveTodo: (Long) -> Unit,
+    onAddReminder: (Long) -> Unit,
     onEditReminder: (Reminder) -> Unit,
 ) {
     Surface(
@@ -178,7 +184,8 @@ fun TodoMainScreenContent(
                 todos,
                 getRemindersForTodo = getRemindersForTodo,
                 onRemoveTodo = onRemoveTodo,
-                onGoToReminder = onEditReminder,
+                onAddReminder = onAddReminder,
+                onEditReminder = onEditReminder,
                 undoableTodoRemovalIds = undoTodoRemovalState.undoableTodoRemovals,
                 paddingValues,
             )
@@ -221,7 +228,8 @@ fun TodoList(
     todos: List<Todo>,
     getRemindersForTodo: @Composable (Todo) -> List<Reminder>,
     onRemoveTodo: (Long) -> Unit,
-    onGoToReminder: (Reminder) -> Unit,
+    onAddReminder: (Long) -> Unit,
+    onEditReminder: (Reminder) -> Unit,
     undoableTodoRemovalIds: List<Long>,
     paddingValues: PaddingValues,
 ) {
@@ -250,7 +258,8 @@ fun TodoList(
                 todo,
                 reminders,
                 onRemoveTodo,
-                onGoToReminder,
+                onAddReminder,
+                onEditReminder,
             )
         }
         item {
@@ -500,7 +509,8 @@ fun TodoListPreview() {
                 }
             },
             onRemoveTodo = {},
-            onGoToReminder = {},
+            onAddReminder = {},
+            onEditReminder = {},
             undoableTodoRemovalIds = listOf(),
             paddingValues = PaddingValues(8.dp),
         )

@@ -40,6 +40,9 @@ class TodosMainScreenViewModel @Inject constructor(
     private val _todoAdditionState = MutableStateFlow<TodoAdditionState?>(null)
     val todoAdditionState = _todoAdditionState as StateFlow<TodoAdditionState?>
 
+    private val _addReminderState = MutableStateFlow<Long?>(null)
+    val addReminderState = _addReminderState as StateFlow<Long?>
+
     private val _editReminderState = MutableStateFlow<Reminder?>(null)
     val editReminderState = _editReminderState as StateFlow<Reminder?>
 
@@ -132,6 +135,10 @@ class TodosMainScreenViewModel @Inject constructor(
                 undoableTodoRemovals = listOf()
             )
         }
+    }
+
+    fun addReminderForTodo(todoId: Long?) {
+        _addReminderState.update { todoId }
     }
 
     fun editReminder(reminder: Reminder?) {

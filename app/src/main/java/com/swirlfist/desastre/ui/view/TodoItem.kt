@@ -39,7 +39,8 @@ fun TodoItem(
     todo: Todo,
     reminders: List<Reminder>,
     onRemove: (Long) -> Unit,
-    onReminderClick: (Reminder) -> Unit,
+    onAddReminder: (Long) -> Unit,
+    onEditReminder: (Reminder) -> Unit,
 ) {
     Card(
         modifier = Modifier
@@ -79,7 +80,11 @@ fun TodoItem(
                     overflow = TextOverflow.Ellipsis,
                 )
             }
-            TodoReminders(reminders, onReminderClick)
+            TodoReminders(
+                reminders = reminders,
+                onAddReminder = { onAddReminder(todo.id) },
+                onEditReminder = onEditReminder,
+            )
         }
     }
 }
@@ -87,14 +92,22 @@ fun TodoItem(
 @Composable
 fun TodoReminders(
     reminders: List<Reminder>,
-    onReminderClick: (Reminder) -> Unit,
+    onAddReminder: () -> Unit,
+    onEditReminder: (Reminder) -> Unit,
 ) {
     LazyRow(
         userScrollEnabled = true,
         horizontalArrangement = Arrangement.spacedBy(16.dp),
     ) {
+        item {
+            AddOrEditReminderButton(
+                text = "+",
+                strikeText = false,
+                onClick = onAddReminder,
+            )
+        }
         items(reminders) { reminder ->
-            ReminderItem(reminder, onReminderClick)
+            ReminderItem(reminder, onEditReminder)
         }
     }
 }
@@ -115,13 +128,31 @@ fun ReminderItem(
 
     val timeText = LocalTime.of(reminder.hour, reminder.minute).toShortFormat()
 
-    Button(onClick = { onReminderClick(reminder) }) {
+    AddOrEditReminderButton(
+        text = "$dateText @ $timeText",
+        strikeText = reminder.isInThePast(),
+        onClick = { onReminderClick(reminder) },
+    )
+}
+
+@Composable
+fun AddOrEditReminderButton(
+    text: String,
+    strikeText: Boolean = false,
+    onClick: () -> Unit,
+) {
+    Button(onClick = onClick) {
         Text(
-            text = "$dateText @ $timeText",
-            style = if (!reminder.isInThePast()) MaterialTheme.typography.bodySmall
-            else MaterialTheme.typography.bodySmall.copy(
-                textDecoration = TextDecoration.LineThrough
-            ),
+            text = text,
+            style = (
+                if (strikeText) {
+                    MaterialTheme.typography.bodySmall.copy(
+                        textDecoration = TextDecoration.LineThrough
+                    )
+                } else {
+                    MaterialTheme.typography.bodySmall
+                }
+            )
         )
     }
 }
@@ -138,7 +169,8 @@ fun TodoItemNoDescriptionPreview() {
             ),
             reminders = PreviewUtil.mockReminders(4),
             onRemove = {},
-            onReminderClick = {},
+            onAddReminder = {},
+            onEditReminder = {},
         )
     }
 }
@@ -155,7 +187,8 @@ fun TodoItemLongDescriptionPreview() {
             ),
             reminders = PreviewUtil.mockReminders(4),
             onRemove = {},
-            onReminderClick = {},
+            onAddReminder = {},
+            onEditReminder = {},
         )
     }
 }
