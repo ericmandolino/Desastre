@@ -70,7 +70,7 @@ import java.time.LocalDateTime
 import kotlin.random.Random
 
 @Composable
-fun TodoMainScreen(
+fun TodosMainScreen(
     todosMainScreenViewModel: TodosMainScreenViewModel = hiltViewModel(),
     onNavigateToAddReminder: (todoId: Long) -> Unit,
     onNavigateToEditReminder: (todoId: Long, reminderId: Long) -> Unit,

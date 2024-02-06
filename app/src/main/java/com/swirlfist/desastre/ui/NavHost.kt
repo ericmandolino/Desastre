@@ -8,7 +8,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.swirlfist.desastre.ui.view.AddOrEditReminderScreen
-import com.swirlfist.desastre.ui.view.TodoMainScreen
+import com.swirlfist.desastre.ui.view.TodosMainScreen
 
 @Composable
 fun NavHost(
@@ -22,7 +22,7 @@ fun NavHost(
         composable(
             route = "main",
         ) {
-            TodoMainScreen(
+            TodosMainScreen(
                 onNavigateToAddReminder = { todoId ->
                     navController.navigate("addReminder/$todoId")
                 },
