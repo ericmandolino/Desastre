@@ -70,7 +70,7 @@ class TodosMainScreenViewModelTest {
     }
 
     @Test
-    fun observeTodoList_returnsFlowOfTodoList() {
+    fun `observing the TODO list returns a flow of list of TODOs`() {
         // Arrange
         val todoListFlow: Flow<List<Todo>> = flowOf(listOf())
         whenever(observeTodoListUseCase()).thenReturn(todoListFlow)
@@ -83,11 +83,11 @@ class TodosMainScreenViewModelTest {
     }
 
     @Test
-    fun onStartAddTodoClicked_createsTodoAdditionState() {
+    fun `starting the process to add a TODO creates an addition state`() {
         // Arrange
 
         // Act
-        viewModel.onStartAddTodoClicked()
+        viewModel.startAddTodo()
         val todoAdditionState = viewModel.todoAdditionState.value!!
 
         // Assert
@@ -98,9 +98,9 @@ class TodosMainScreenViewModelTest {
     }
 
     @Test
-    fun onCancelAddTodoClicked_todoAdditionStateCleared() {
+    fun `cancelling a TODO creation clears the addition state`() {
         // Arrange
-        viewModel.onStartAddTodoClicked()
+        viewModel.startAddTodo()
         Assert.assertNotNull(viewModel.todoAdditionState.value)
 
         // Act
@@ -111,9 +111,9 @@ class TodosMainScreenViewModelTest {
     }
 
     @Test
-    fun addingTodo_titleChanged_updatesTodoAdditionStateWithNewTitle() {
+    fun `changes in the title while creating a todo are reflected in the state`() {
         // Arrange
-        viewModel.onStartAddTodoClicked()
+        viewModel.startAddTodo()
         var todoAdditionState = viewModel.todoAdditionState.value!!
         val newTitle = "new title"
 
@@ -126,9 +126,9 @@ class TodosMainScreenViewModelTest {
     }
 
     @Test
-    fun addingTodo_titleChangedLong_updatesTodoAdditionStateWithTruncatedTitle() {
+    fun `while creating a todo changes in the title that make it too long are truncated in the state`() {
         // Arrange
-        viewModel.onStartAddTodoClicked()
+        viewModel.startAddTodo()
         var todoAdditionState = viewModel.todoAdditionState.value!!
         val newTitle = mockString(55)
 
@@ -141,9 +141,9 @@ class TodosMainScreenViewModelTest {
     }
 
     @Test
-    fun addingTodo_descriptionChanged_updatesTodoAdditionStateWithNewDescription() {
+    fun `changes in the description while creating a todo are reflected in the state`() {
         // Arrange
-        viewModel.onStartAddTodoClicked()
+        viewModel.startAddTodo()
         var todoAdditionState = viewModel.todoAdditionState.value!!
         val newDescription = "new description"
 
@@ -156,9 +156,9 @@ class TodosMainScreenViewModelTest {
     }
 
     @Test
-    fun addingTodo_descriptionChangedLong_updatesTodoAdditionStateWithTruncatedDescription() {
+    fun `while creating a todo changes in the description that make it too long are truncated in the state`() {
         // Arrange
-        viewModel.onStartAddTodoClicked()
+        viewModel.startAddTodo()
         var todoAdditionState = viewModel.todoAdditionState.value!!
         val newDescription = mockString(2010)
 
@@ -171,9 +171,9 @@ class TodosMainScreenViewModelTest {
     }
 
     @Test
-    fun addingTodo_addReminderChanged_updatesTodoAdditionStateWithNewValue() {
+    fun `changes in the check to add a reminder while creating a todo are reflected in the state`() {
         // Arrange
-        viewModel.onStartAddTodoClicked()
+        viewModel.startAddTodo()
         var todoAdditionState = viewModel.todoAdditionState.value!!
 
         // Act
@@ -186,9 +186,9 @@ class TodosMainScreenViewModelTest {
     }
 
     @Test
-    fun onCompleteAddTodoClicked_emptyTitle_updatesTodoAdditionStateWithError() {
+    fun `attempting to complete a TODO creation with an empty title updates the state with the error`() {
         // Arrange
-        viewModel.onStartAddTodoClicked()
+        viewModel.startAddTodo()
         var todoAdditionState = viewModel.todoAdditionState.value!!
 
         // Act
@@ -201,12 +201,12 @@ class TodosMainScreenViewModelTest {
     }
 
     @Test
-    fun onCompleteAddTodoClicked_todoAdded() = runTest {
+    fun `successfully completing a TODO creation invokes the use case to add the new TODO`() = runTest {
         // Arrange
         val title = "title"
         val description = "description"
         val addReminder = true
-        viewModel.onStartAddTodoClicked()
+        viewModel.startAddTodo()
         val todoAdditionState = viewModel.todoAdditionState.value!!
         todoAdditionState.onTitleChanged(title)
         todoAdditionState.onDescriptionChanged(description)
@@ -227,10 +227,10 @@ class TodosMainScreenViewModelTest {
     }
 
     @Test
-    fun onCompleteAddTodoClicked_todoAdditionStateCleared() = runTest {
+    fun `successfully completing a TODO creation clears the addition state`() = runTest {
         // Arrange
         val title = "title"
-        viewModel.onStartAddTodoClicked()
+        viewModel.startAddTodo()
         val todoAdditionState = viewModel.todoAdditionState.value!!
         todoAdditionState.onTitleChanged(title)
         whenever(addTodoUseCase(org.mockito.kotlin.any())).thenReturn(1L)
@@ -244,13 +244,13 @@ class TodosMainScreenViewModelTest {
     }
 
     @Test
-    fun onCompleteAddTodoClicked_addReminderSelected_navigatesToAddReminder() = runTest {
+    fun `when successfully completing a TODO with the check to add a reminder we navigate to do so`() = runTest {
         // Arrange
         val title = "title"
         val description = "description"
         val addReminder = true
         val todoId = 23L
-        viewModel.onStartAddTodoClicked()
+        viewModel.startAddTodo()
         val todoAdditionState = viewModel.todoAdditionState.value!!
         todoAdditionState.onTitleChanged(title)
         todoAdditionState.onDescriptionChanged(description)
@@ -267,7 +267,7 @@ class TodosMainScreenViewModelTest {
     }
 
     @Test
-    fun removeTodo_todoRemovedAfterDelay() = runTest {
+    fun `removing a TODO is done after a delay`() = runTest {
         // Arrange
         val todoId = 1L
 
@@ -280,7 +280,7 @@ class TodosMainScreenViewModelTest {
     }
 
     @Test
-    fun removeTodo_removalUndone_todoNotRemoved() = runTest {
+    fun `when the process to remove a TODO is undone then the TODO is not removed`() = runTest {
         // Arrange
         val todoId = 1L
 
@@ -295,7 +295,7 @@ class TodosMainScreenViewModelTest {
     }
 
     @Test
-    fun removeTodos_removalUndoneAfterFirstTodoRemoved_secondTodoNotRemoved() = runTest {
+    fun `when undoing a todo removal only the todo removals that have not yet completed are undone`() = runTest {
         // Arrange
         val todo1Id = 1L
         val todo2Id = 2L
@@ -314,7 +314,7 @@ class TodosMainScreenViewModelTest {
     }
 
     @Test
-    fun observeRemindersForTodo_returnsFlowOfRemindersForTodoId() {
+    fun `observing reminders for a TODO id returns oa flow of list of reminders`() {
         // Arrange
         val todoId = 1L
         val reminderListFlow: Flow<List<Reminder>> = flowOf(listOf())
@@ -328,7 +328,7 @@ class TodosMainScreenViewModelTest {
     }
 
     @Test
-    fun editReminder_stateUpdatedWithReminder() {
+    fun `editing a reminder updates the state with the reminder to edit`() {
         // Arrange
         val reminder = mock<Reminder>()
 
@@ -337,6 +337,18 @@ class TodosMainScreenViewModelTest {
 
         // Assert
         Assert.assertEquals(reminder, viewModel.editReminderState.value)
+    }
+
+    @Test
+    fun `adding a reminder for a TODO is updates the state with the TODO id to get a new reminder`() {
+        // Arrange
+        val todoId = 1L
+
+        // Act
+        viewModel.addReminderForTodo(todoId)
+
+        // Assert
+        Assert.assertEquals(todoId, viewModel.addReminderState.value)
     }
 
     private fun mockString(length: Int): String {

@@ -146,7 +146,7 @@ fun TodoMainScreen(
                     if (isAddingTodo) {
                         todosMainScreenViewModel.cancelAddTodo()
                     } else {
-                        todosMainScreenViewModel.onStartAddTodoClicked()
+                        todosMainScreenViewModel.startAddTodo()
                     }
                 },
             ) {

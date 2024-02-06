@@ -54,7 +54,7 @@ class TodosMainScreenViewModel @Inject constructor(
         return observeRemindersForTodoUseCase(todoId)
     }
 
-    fun onStartAddTodoClicked() {
+    fun startAddTodo() {
         _todoAdditionState.update {
             createTodoAdditionState()
         }
