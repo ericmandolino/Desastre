@@ -15,7 +15,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
@@ -42,18 +46,26 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.swirlfist.desastre.R
+import com.swirlfist.desastre.data.model.Reminder
 import com.swirlfist.desastre.data.model.ReminderTimeUnit
 import com.swirlfist.desastre.ui.theme.DesastreTheme
+import com.swirlfist.desastre.util.isForToday
+import com.swirlfist.desastre.util.isForTomorrow
+import com.swirlfist.desastre.util.isInThePast
 import com.swirlfist.desastre.util.toShortFormat
 import java.time.Instant
 import java.time.LocalDate
@@ -63,6 +75,165 @@ import java.time.ZoneId
 import java.time.ZoneOffset
 
 private const val MIN_REMINDER_MINUTES = 60L
+
+@Composable
+fun Reminders(
+    reminders: List<Reminder>,
+    backgroundColor: Color,
+    onAddReminder: () -> Unit,
+    onEditReminder: (Reminder) -> Unit,
+) {
+    val listState = rememberLazyListState()
+
+    ScrollableContentWithGradients(
+        canScrollBackward = listState.canScrollBackward,
+        canScrollForward = listState.canScrollForward,
+        gradientColor = backgroundColor,
+        gradientWidth = 32.dp,
+    ) {
+        LazyRow(
+            state = listState,
+            userScrollEnabled = true,
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier
+                .background(backgroundColor)
+                .wrapContentHeight(),
+        ) {
+            item {
+                AddOrEditReminderButton(
+                    text = "+",
+                    strikeText = false,
+                    onClick = onAddReminder,
+                )
+            }
+            items(reminders) { reminder ->
+                ReminderItem(reminder, onEditReminder)
+            }
+        }
+    }
+}
+
+@Composable
+fun ScrollableContentWithGradients(
+    modifier: Modifier = Modifier,
+    canScrollBackward: Boolean,
+    canScrollForward: Boolean,
+    gradientColor: Color,
+    gradientWidth: Dp,
+    content: @Composable () -> Unit,
+) {
+    Layout(
+        modifier = modifier,
+        content = addGradients(
+            gradientColor,
+            gradientWidth,
+            content
+        ),
+    ) { measurableList, constraints ->
+        val contentPlaceable = measurableList.first().measure(constraints)
+        val gradientConstraints = constraints.copy(
+            maxHeight = contentPlaceable.height,
+            minHeight = contentPlaceable.height,
+        )
+        val startGradientPlaceable = if (canScrollBackward) {
+            measurableList[1].measure(gradientConstraints)
+        } else {
+            null
+        }
+        val endGradientPlaceable = if (canScrollForward) {
+            measurableList[2].measure(gradientConstraints)
+        } else {
+            null
+        }
+
+        layout(contentPlaceable.width, contentPlaceable.height) {
+            contentPlaceable.placeRelative(0, 0)
+            startGradientPlaceable?.placeRelative(0, 0)
+            endGradientPlaceable?.placeRelative(contentPlaceable.width - endGradientPlaceable.width, 0)
+        }
+    }
+}
+
+fun addGradients(
+    gradientColor: Color,
+    gradientWidth: Dp,
+    content: @Composable () -> Unit,
+) = @Composable {
+    content()
+    HorizontalScrollableGradient(
+        color = gradientColor,
+        width = gradientWidth,
+        isStart = true,
+    )
+    HorizontalScrollableGradient(
+        color = gradientColor,
+        width = gradientWidth,
+        isStart = false,
+    )
+}
+
+@Composable
+fun HorizontalScrollableGradient(
+    modifier: Modifier = Modifier,
+    color: Color,
+    width: Dp = 32.dp,
+    isStart: Boolean = false,
+) {
+    val gradientColorList = with(listOf(Color.Transparent, color)) {
+        if (isStart) this.asReversed() else this
+    }
+
+    Spacer(
+        modifier = modifier
+            .width(width)
+            .background(Brush.horizontalGradient(gradientColorList))
+    )
+}
+
+@Composable
+fun ReminderItem(
+    reminder: Reminder,
+    onReminderClick: (Reminder) -> Unit,
+) {
+
+    val dateText = if (reminder.isForToday()) {
+        stringResource(R.string.today)
+    } else if (reminder.isForTomorrow()) {
+        stringResource(id = R.string.tomorrow)
+    } else {
+        LocalDate.of(reminder.year, reminder.month, reminder.day).toShortFormat()
+    }
+
+    val timeText = LocalTime.of(reminder.hour, reminder.minute).toShortFormat()
+
+    AddOrEditReminderButton(
+        text = "$dateText @ $timeText",
+        strikeText = reminder.isInThePast(),
+        onClick = { onReminderClick(reminder) },
+    )
+}
+
+@Composable
+fun AddOrEditReminderButton(
+    text: String,
+    strikeText: Boolean = false,
+    onClick: () -> Unit,
+) {
+    Button(onClick = onClick) {
+        Text(
+            text = text,
+            style = (
+                    if (strikeText) {
+                        MaterialTheme.typography.bodySmall.copy(
+                            textDecoration = TextDecoration.LineThrough
+                        )
+                    } else {
+                        MaterialTheme.typography.bodySmall
+                    }
+                    )
+        )
+    }
+}
 
 @Composable
 fun DaySelector(
@@ -649,6 +820,64 @@ private fun getTimeFromNow(
         ReminderTimeUnit.Minute -> LocalDateTime.now().plusMinutes(amount.toLong())
         ReminderTimeUnit.Hour -> LocalDateTime.now().plusHours(amount.toLong())
         else -> LocalDateTime.now()
+    }
+}
+
+@Preview(showBackground = true, widthDp = 320)
+@Composable
+fun RemindersPreview() {
+    DesastreTheme {
+        Reminders(
+            reminders = PreviewUtil.mockReminders(4),
+            backgroundColor = MaterialTheme.colorScheme.surface,
+            onAddReminder = {},
+            onEditReminder = {},
+        )
+    }
+}
+
+@Preview(showBackground = true, widthDp = 320)
+@Composable
+fun RemindersEmptyPreview() {
+    DesastreTheme {
+        Reminders(
+            reminders = listOf(),
+            backgroundColor = MaterialTheme.colorScheme.surface,
+            onAddReminder = {},
+            onEditReminder = {},
+        )
+    }
+}
+
+@Preview
+@Composable
+fun ReminderItemPreview() {
+    DesastreTheme {
+        ReminderItem(PreviewUtil.mockReminder()) {}
+    }
+}
+
+@Preview
+@Composable
+fun ReminderItemTodayPreview() {
+    DesastreTheme {
+        ReminderItem(PreviewUtil.mockTodayReminder()) {}
+    }
+}
+
+@Preview
+@Composable
+fun ReminderItemTomorrowPreview() {
+    DesastreTheme {
+        ReminderItem(PreviewUtil.mockTomorrowReminder()) {}
+    }
+}
+
+@Preview
+@Composable
+fun ReminderItemPastPreview() {
+    DesastreTheme {
+        ReminderItem(PreviewUtil.mockYesterdayReminder()) {}
     }
 }
 

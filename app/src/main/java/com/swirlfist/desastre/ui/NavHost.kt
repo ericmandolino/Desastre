@@ -8,6 +8,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.swirlfist.desastre.ui.view.AddOrEditReminderScreen
+import com.swirlfist.desastre.ui.view.TodoScreen
 import com.swirlfist.desastre.ui.view.TodosMainScreen
 
 @Composable
@@ -23,21 +24,28 @@ fun NavHost(
             route = "main",
         ) {
             TodosMainScreen(
-                onNavigateToAddReminder = { todoId ->
-                    navController.navigate("addReminder/$todoId")
-                },
-                onNavigateToEditReminder = { todoId, reminderId ->
-                    navController.navigate("editReminder/$todoId/$reminderId")
-                }
+                onNavigateToTodo = navController::toTodo,
+                onNavigateToAddReminder = navController::toAddReminder,
+                onNavigateToEditReminder = navController::toEditReminder,
+            )
+        }
+        composable(
+            route = "todo/{todoId}",
+            arguments = listOf(navArgument("todoId") { type = NavType.LongType }),
+        ) { navBackStackEntry ->
+            TodoScreen(
+                todoId = navBackStackEntry.arguments?.getLong("todoId"),
+                onNavigateToAddReminder = navController::toAddReminder,
+                onNavigateToEditReminder = navController::toEditReminder,
             )
         }
         composable(
             route = "addReminder/{todoId}",
             arguments = listOf(navArgument("todoId") { type = NavType.LongType }),
-            ) {navBackStackEntry ->
+        ) { navBackStackEntry ->
             AddOrEditReminderScreen(
-                onReminderCompleted = { popBack(navController) },
                 todoId = navBackStackEntry.arguments?.getLong("todoId"),
+                onReminderCompleted = navController::popBack,
             )
         }
         composable(
@@ -46,21 +54,22 @@ fun NavHost(
                 navArgument("todoId") { type = NavType.LongType },
                 navArgument("reminderId") { type = NavType.LongType },
             ),
-        ) {navBackStackEntry ->
+        ) { navBackStackEntry ->
             AddOrEditReminderScreen(
-                onReminderCompleted = { popBack(navController) },
                 todoId = navBackStackEntry.arguments?.getLong("todoId"),
                 reminderId = navBackStackEntry.arguments?.getLong("reminderId"),
+                onReminderCompleted = navController::popBack,
             )
         }
     }
 }
 
-private fun popBack(
-    navController: NavHostController,
-) {
-    val navigated = navController.popBackStack()
+private fun NavHostController.popBack() {
+    val navigated = popBackStack()
     if (!navigated) {
-        navController.navigate("main")
+        navigate("main")
     }
 }
+private fun NavHostController.toTodo(todoId: Long) = navigate("todo/$todoId")
+private fun NavHostController.toAddReminder(todoId: Long) = navigate("addReminder/$todoId")
+private fun NavHostController.toEditReminder(todoId: Long, reminderId: Long) = navigate("editReminder/$todoId/$reminderId")

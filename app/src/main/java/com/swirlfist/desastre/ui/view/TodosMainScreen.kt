@@ -72,6 +72,7 @@ import kotlin.random.Random
 @Composable
 fun TodosMainScreen(
     todosMainScreenViewModel: TodosMainScreenViewModel = hiltViewModel(),
+    onNavigateToTodo: (todoId: Long) -> Unit,
     onNavigateToAddReminder: (todoId: Long) -> Unit,
     onNavigateToEditReminder: (todoId: Long, reminderId: Long) -> Unit,
 ) {
@@ -134,6 +135,7 @@ fun TodosMainScreen(
             onCompleteAddTodo = {
                 todosMainScreenViewModel.completeAddTodo(onNavigateToAddReminder)
             },
+            onNavigateToTodo = onNavigateToTodo,
             onRemoveTodo = todosMainScreenViewModel::removeTodo,
             onAddReminder = todosMainScreenViewModel::addReminderForTodo,
             onEditReminder = todosMainScreenViewModel::editReminder,
@@ -171,6 +173,7 @@ fun TodoMainScreenContent(
     undoTodoRemovalState: UndoTodoRemovalState,
     paddingValues: PaddingValues,
     onCompleteAddTodo: () -> Unit,
+    onNavigateToTodo: (Long) -> Unit,
     onRemoveTodo: (Long) -> Unit,
     onAddReminder: (Long) -> Unit,
     onEditReminder: (Reminder) -> Unit,
@@ -183,6 +186,7 @@ fun TodoMainScreenContent(
             TodoList(
                 todos,
                 getRemindersForTodo = getRemindersForTodo,
+                onNavigateToTodo = onNavigateToTodo,
                 onRemoveTodo = onRemoveTodo,
                 onAddReminder = onAddReminder,
                 onEditReminder = onEditReminder,
@@ -227,6 +231,7 @@ fun EmptyTodoList() {
 fun TodoList(
     todos: List<Todo>,
     getRemindersForTodo: @Composable (Todo) -> List<Reminder>,
+    onNavigateToTodo: (Long) -> Unit,
     onRemoveTodo: (Long) -> Unit,
     onAddReminder: (Long) -> Unit,
     onEditReminder: (Reminder) -> Unit,
@@ -255,11 +260,12 @@ fun TodoList(
             val reminders = getRemindersForTodo(todo)
 
             TodoItem(
-                todo,
-                reminders,
-                onRemoveTodo,
-                onAddReminder,
-                onEditReminder,
+                todo = todo,
+                reminders = reminders,
+                onClick = onNavigateToTodo,
+                onRemove = onRemoveTodo,
+                onAddReminder = onAddReminder,
+                onEditReminder = onEditReminder,
             )
         }
         item {
@@ -508,6 +514,7 @@ fun TodoListPreview() {
                     listOf()
                 }
             },
+            onNavigateToTodo = {},
             onRemoveTodo = {},
             onAddReminder = {},
             onEditReminder = {},
