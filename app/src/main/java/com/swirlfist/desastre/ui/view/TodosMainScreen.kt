@@ -237,13 +237,13 @@ fun TodoList(
     undoableTodoRemovalIds: List<Long>,
     paddingValues: PaddingValues,
 ) {
-    if (todos.isEmpty()) {
-        EmptyTodoList()
-        return
-    }
-
     val filteredTodos = todos.filterNot { todo ->
         undoableTodoRemovalIds.contains(todo.id)
+    }
+
+    if (filteredTodos.isEmpty()) {
+        EmptyTodoList()
+        return
     }
 
     LazyColumn(
