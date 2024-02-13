@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.swirlfist.desastre.data.model.Reminder
 import com.swirlfist.desastre.data.model.Todo
-import com.swirlfist.desastre.data.useCase.IAddReminderUseCase
+import com.swirlfist.desastre.data.useCase.IAddOrUpdateReminderUseCase
 import com.swirlfist.desastre.data.useCase.IObserveReminderUseCase
 import com.swirlfist.desastre.data.useCase.IObserveTodoUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -22,7 +22,7 @@ import javax.inject.Inject
 class AddOrEditReminderScreenViewModel @Inject constructor(
     private val observeTodoUseCase: IObserveTodoUseCase,
     private val observeReminderUseCase: IObserveReminderUseCase,
-    private val addReminderUseCase: IAddReminderUseCase,
+    private val addOrUpdateReminderUseCase: IAddOrUpdateReminderUseCase,
 ) : ViewModel()  {
     private val _reminderAddOrUpdateState = MutableStateFlow(createReminderAddOrUpdateState())
     val reminderAddOrUpdateState = _reminderAddOrUpdateState.asStateFlow()
@@ -91,7 +91,7 @@ class AddOrEditReminderScreenViewModel @Inject constructor(
                 }
 
                 viewModelScope.launch {
-                    addReminderUseCase(
+                    addOrUpdateReminderUseCase(
                         Reminder(
                             id = _reminderAddOrUpdateState.value.reminderId,
                             todoId = _reminderAddOrUpdateState.value.todoId,

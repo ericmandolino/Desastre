@@ -18,16 +18,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.swirlfist.desastre.R
-import com.swirlfist.desastre.ui.theme.DesastreTheme
-
-@Composable
-fun TodoNotFound() {
-    NotFound()
-}
 
 @Composable
 fun NotFound() {
@@ -69,12 +62,4 @@ fun BoxScope.VerticalScrollableGradient(
             .background(Brush.verticalGradient(gradientColorList))
             .align(alignment)
     )
-}
-
-@Preview(showBackground = true, widthDp = 320, heightDp = 320)
-@Composable
-fun TodoNotFoundPreview() {
-    DesastreTheme {
-        TodoNotFound()
-    }
 }

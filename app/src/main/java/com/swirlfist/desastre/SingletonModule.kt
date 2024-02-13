@@ -9,8 +9,8 @@ import com.swirlfist.desastre.data.TodoRepository
 import com.swirlfist.desastre.data.db.ReminderDao
 import com.swirlfist.desastre.data.db.TodoDao
 import com.swirlfist.desastre.data.db.TodoDatabase
-import com.swirlfist.desastre.data.useCase.IAddReminderUseCase
-import com.swirlfist.desastre.data.useCase.IAddTodoUseCase
+import com.swirlfist.desastre.data.useCase.IAddOrUpdateReminderUseCase
+import com.swirlfist.desastre.data.useCase.IAddOrUpdateTodoUseCase
 import com.swirlfist.desastre.data.useCase.IObserveReminderUseCase
 import com.swirlfist.desastre.data.useCase.IObserveRemindersForTodoUseCase
 import com.swirlfist.desastre.data.useCase.IObserveTodoListUseCase
@@ -69,7 +69,7 @@ class SingletonModule {
 
     @Singleton
     @Provides
-    fun provideAddTodoUseCase(todoRepository: ITodoRepository): IAddTodoUseCase = IAddTodoUseCase(todoRepository::addTodo)
+    fun provideAddOrUpdateTodoUseCase(todoRepository: ITodoRepository): IAddOrUpdateTodoUseCase = IAddOrUpdateTodoUseCase(todoRepository::addOrUpdateTodo)
 
     @Singleton
     @Provides
@@ -85,7 +85,7 @@ class SingletonModule {
 
     @Singleton
     @Provides
-    fun provideAddReminderUSeCase(todoRepository: ITodoRepository): IAddReminderUseCase = IAddReminderUseCase(todoRepository::addReminder)
+    fun provideAddOrUpdateReminderUseCase(todoRepository: ITodoRepository): IAddOrUpdateReminderUseCase = IAddOrUpdateReminderUseCase(todoRepository::addOrUpdateReminder)
 
     @Singleton
     @Provides

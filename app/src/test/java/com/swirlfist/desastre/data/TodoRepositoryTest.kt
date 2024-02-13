@@ -85,7 +85,7 @@ internal class TodoRepositoryTest {
         )
 
         // Act
-        repository.addTodo(todo)
+        repository.addOrUpdateTodo(todo)
 
         // Assert
         verify(todoDao, times(1)).insert(todo)
@@ -176,7 +176,7 @@ internal class TodoRepositoryTest {
         )
 
         // Act
-        repository.addReminder(reminder)
+        repository.addOrUpdateReminder(reminder)
 
         // Assert
         verify(reminderDao, times(1)).insert(reminder)

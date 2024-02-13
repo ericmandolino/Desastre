@@ -3,7 +3,7 @@ package com.swirlfist.desastre.ui.viewmodel
 import com.swirlfist.desastre.data.ICoroutineDispatcherProvider
 import com.swirlfist.desastre.data.model.Reminder
 import com.swirlfist.desastre.data.model.Todo
-import com.swirlfist.desastre.data.useCase.IAddTodoUseCase
+import com.swirlfist.desastre.data.useCase.IAddOrUpdateTodoUseCase
 import com.swirlfist.desastre.data.useCase.IObserveRemindersForTodoUseCase
 import com.swirlfist.desastre.data.useCase.IObserveTodoListUseCase
 import com.swirlfist.desastre.data.useCase.IRemoveTodoUseCase
@@ -43,7 +43,7 @@ class TodosMainScreenViewModelTest {
     lateinit var observeRemindersForTodoUseCase: IObserveRemindersForTodoUseCase
 
     @Mock
-    lateinit var addTodoUseCase: IAddTodoUseCase
+    lateinit var addOrUpdateTodoUseCase: IAddOrUpdateTodoUseCase
 
     @Mock
     lateinit var removeTodoUseCase: IRemoveTodoUseCase
@@ -59,7 +59,7 @@ class TodosMainScreenViewModelTest {
             coroutineDispatcherProvider,
             observeTodoListUseCase,
             observeRemindersForTodoUseCase,
-            addTodoUseCase,
+            addOrUpdateTodoUseCase,
             removeTodoUseCase,
         )
     }
@@ -91,9 +91,9 @@ class TodosMainScreenViewModelTest {
         val todoAdditionState = viewModel.todoAdditionState.value!!
 
         // Assert
-        Assert.assertEquals("", todoAdditionState.title)
-        Assert.assertEquals("", todoAdditionState.description)
-        Assert.assertFalse(todoAdditionState.showTitleEmptyValidationError)
+        Assert.assertEquals("", todoAdditionState.titleInputState.titleText)
+        Assert.assertEquals("", todoAdditionState.descriptionInputState.descriptionText)
+        Assert.assertEquals(TodoTitleValidationResult.SUCCESS, todoAdditionState.titleInputState.titleValidation)
         Assert.assertFalse(todoAdditionState.addReminder)
     }
 
@@ -118,11 +118,11 @@ class TodosMainScreenViewModelTest {
         val newTitle = "new title"
 
         // Act
-        todoAdditionState.onTitleChanged(newTitle)
+        todoAdditionState.titleInputState.onTitleValueChanged(newTitle)
         todoAdditionState = viewModel.todoAdditionState.value!!
 
         // Assert
-        Assert.assertEquals(newTitle, todoAdditionState.title)
+        Assert.assertEquals(newTitle, todoAdditionState.titleInputState.titleText)
     }
 
     @Test
@@ -133,11 +133,11 @@ class TodosMainScreenViewModelTest {
         val newTitle = mockString(55)
 
         // Act
-        todoAdditionState.onTitleChanged(newTitle)
+        todoAdditionState.titleInputState.onTitleValueChanged(newTitle)
         todoAdditionState = viewModel.todoAdditionState.value!!
 
         // Assert
-        Assert.assertEquals(newTitle.substring(0, 50), todoAdditionState.title)
+        Assert.assertEquals(newTitle.substring(0, 50), todoAdditionState.titleInputState.titleText)
     }
 
     @Test
@@ -148,11 +148,11 @@ class TodosMainScreenViewModelTest {
         val newDescription = "new description"
 
         // Act
-        todoAdditionState.onDescriptionChanged(newDescription)
+        todoAdditionState.descriptionInputState.onDescriptionValueChanged(newDescription)
         todoAdditionState = viewModel.todoAdditionState.value!!
 
         // Assert
-        Assert.assertEquals(newDescription, todoAdditionState.description)
+        Assert.assertEquals(newDescription, todoAdditionState.descriptionInputState.descriptionText)
     }
 
     @Test
@@ -163,11 +163,11 @@ class TodosMainScreenViewModelTest {
         val newDescription = mockString(2010)
 
         // Act
-        todoAdditionState.onDescriptionChanged(newDescription)
+        todoAdditionState.descriptionInputState.onDescriptionValueChanged(newDescription)
         todoAdditionState = viewModel.todoAdditionState.value!!
 
         // Assert
-        Assert.assertEquals(newDescription.substring(0, 2000), todoAdditionState.description)
+        Assert.assertEquals(newDescription.substring(0, 2000), todoAdditionState.descriptionInputState.descriptionText)
     }
 
     @Test
@@ -192,12 +192,12 @@ class TodosMainScreenViewModelTest {
         var todoAdditionState = viewModel.todoAdditionState.value!!
 
         // Act
-        todoAdditionState.onTitleChanged("")
+        todoAdditionState.titleInputState.onTitleValueChanged("")
         viewModel.completeAddTodo {}
         todoAdditionState = viewModel.todoAdditionState.value!!
 
         // Assert
-        Assert.assertTrue(todoAdditionState.showTitleEmptyValidationError)
+        Assert.assertEquals(TodoTitleValidationResult.TITLE_CANNOT_BE_EMPTY, todoAdditionState.titleInputState.titleValidation)
     }
 
     @Test
@@ -208,17 +208,17 @@ class TodosMainScreenViewModelTest {
         val addReminder = true
         viewModel.startAddTodo()
         val todoAdditionState = viewModel.todoAdditionState.value!!
-        todoAdditionState.onTitleChanged(title)
-        todoAdditionState.onDescriptionChanged(description)
+        todoAdditionState.titleInputState.onTitleValueChanged(title)
+        todoAdditionState.descriptionInputState.onDescriptionValueChanged(description)
         todoAdditionState.onAddReminderChanged(addReminder)
-        whenever(addTodoUseCase(org.mockito.kotlin.any())).thenReturn(1L)
+        whenever(addOrUpdateTodoUseCase(org.mockito.kotlin.any())).thenReturn(1L)
 
         // Act
         viewModel.completeAddTodo {}
         advanceUntilIdle()
 
         // Assert
-        verify(addTodoUseCase, times(1))(org.mockito.kotlin.check { todo ->
+        verify(addOrUpdateTodoUseCase, times(1))(org.mockito.kotlin.check { todo ->
             Assert.assertEquals(0, todo.id)
             Assert.assertEquals(title, todo.title)
             Assert.assertEquals(description, todo.description)
@@ -232,8 +232,8 @@ class TodosMainScreenViewModelTest {
         val title = "title"
         viewModel.startAddTodo()
         val todoAdditionState = viewModel.todoAdditionState.value!!
-        todoAdditionState.onTitleChanged(title)
-        whenever(addTodoUseCase(org.mockito.kotlin.any())).thenReturn(1L)
+        todoAdditionState.titleInputState.onTitleValueChanged(title)
+        whenever(addOrUpdateTodoUseCase(org.mockito.kotlin.any())).thenReturn(1L)
 
         // Act
         viewModel.completeAddTodo {}
@@ -252,10 +252,10 @@ class TodosMainScreenViewModelTest {
         val todoId = 23L
         viewModel.startAddTodo()
         val todoAdditionState = viewModel.todoAdditionState.value!!
-        todoAdditionState.onTitleChanged(title)
-        todoAdditionState.onDescriptionChanged(description)
+        todoAdditionState.titleInputState.onTitleValueChanged(title)
+        todoAdditionState.descriptionInputState.onDescriptionValueChanged(description)
         todoAdditionState.onAddReminderChanged(addReminder)
-        whenever(addTodoUseCase(org.mockito.kotlin.any())).thenReturn(todoId)
+        whenever(addOrUpdateTodoUseCase(org.mockito.kotlin.any())).thenReturn(todoId)
         val onNavigateToAddReminderMock = mock<(Long) -> Unit>()
 
         // Act

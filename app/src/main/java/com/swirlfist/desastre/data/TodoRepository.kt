@@ -22,7 +22,7 @@ class TodoRepository @Inject constructor(
         return todoDao.observeAll()
     }
 
-    override suspend fun addTodo(todo: Todo): Long = withContext(ioDispatcher) {
+    override suspend fun addOrUpdateTodo(todo: Todo): Long = withContext(ioDispatcher) {
         todoDao.insert(todo)
     }
 
@@ -36,7 +36,7 @@ class TodoRepository @Inject constructor(
     override fun observeRemindersForTodo(todoId: Long): Flow<List<Reminder>> {
         return reminderDao.observeRemindersForTodo(todoId)
     }
-    override suspend fun addReminder(reminder: Reminder): Long = withContext(ioDispatcher) {
+    override suspend fun addOrUpdateReminder(reminder: Reminder): Long = withContext(ioDispatcher) {
         reminderDao.insert(reminder)
     }
     override suspend fun removeReminder(reminderId: Long) = withContext(ioDispatcher) {

@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.swirlfist.desastre.data.ICoroutineDispatcherProvider
 import com.swirlfist.desastre.data.model.Reminder
 import com.swirlfist.desastre.data.model.Todo
-import com.swirlfist.desastre.data.useCase.IAddTodoUseCase
+import com.swirlfist.desastre.data.useCase.IAddOrUpdateTodoUseCase
 import com.swirlfist.desastre.data.useCase.IObserveRemindersForTodoUseCase
 import com.swirlfist.desastre.data.useCase.IObserveTodoListUseCase
 import com.swirlfist.desastre.data.useCase.IRemoveTodoUseCase
@@ -20,8 +20,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
-private const val TITLE_MAX_CHARACTERS = 50
-private const val DESCRIPTION_MAX_CHARACTERS = 2000
 private const val UNDO_TODO_REMOVAL_MILLISECONDS = 3000L
 
 @HiltViewModel
@@ -29,7 +27,7 @@ class TodosMainScreenViewModel @Inject constructor(
     private val coroutineDispatcherProvider: ICoroutineDispatcherProvider,
     private val observeTodoListUseCase: IObserveTodoListUseCase,
     private val observeRemindersForTodoUseCase: IObserveRemindersForTodoUseCase,
-    private val addTodoUseCase: IAddTodoUseCase,
+    private val addOrUpdateTodoUseCase: IAddOrUpdateTodoUseCase,
     private val removeTodoUseCase: IRemoveTodoUseCase,
 ) : ViewModel()  {
     private val delayedTodoRemovalJobs = mutableMapOf<Long, Job>()
@@ -70,11 +68,12 @@ class TodosMainScreenViewModel @Inject constructor(
         onNavigateToAddReminder: (todoId: Long) -> Unit,
     ) {
         val newTodoAddition = todoAdditionState.value ?: return
+        val validatedInputTitleState = newTodoAddition.titleInputState.validateTitleText()
 
-        if (newTodoAddition.title.isEmpty()) {
-            _todoAdditionState.update { state ->
-                state?.copy(
-                    showTitleEmptyValidationError = true,
+        if (validatedInputTitleState.titleValidation != TodoTitleValidationResult.SUCCESS) {
+            _todoAdditionState.update { todoAdditionState ->
+                todoAdditionState?.copy(
+                    titleInputState = validatedInputTitleState
                 )
             }
             return
@@ -82,13 +81,13 @@ class TodosMainScreenViewModel @Inject constructor(
 
         val todo = Todo(
             id = 0,
-            title = newTodoAddition.title,
-            description = newTodoAddition.description,
+            title = newTodoAddition.titleInputState.titleText,
+            description = newTodoAddition.descriptionInputState.descriptionText,
             isDone = false,
         )
 
         viewModelScope.launch {
-            val todoId = addTodoUseCase(todo)
+            val todoId = addOrUpdateTodoUseCase(todo)
             if (!newTodoAddition.addReminder) {
                 return@launch
             }
@@ -100,8 +99,6 @@ class TodosMainScreenViewModel @Inject constructor(
         _todoAdditionState.update {
             null
         }
-
-        return
     }
 
     fun removeTodo(id: Long) {
@@ -145,34 +142,34 @@ class TodosMainScreenViewModel @Inject constructor(
         _editReminderState.update { reminder }
     }
 
-    private fun createTodoAdditionState(): TodoAdditionState {
-        return TodoAdditionState(
-            title = "",
-            showTitleEmptyValidationError = false,
-            description = "",
-            addReminder = false,
-            onTitleChanged = { title ->
-                _todoAdditionState.update { state ->
-                    state?.copy(
-                        title = truncateText(title, TITLE_MAX_CHARACTERS),
-                        showTitleEmptyValidationError = false,
-                    )
-                }
-            },
-            onDescriptionChanged = { description ->
-                _todoAdditionState.update { state ->
-                    state?.copy(description = truncateText(description, DESCRIPTION_MAX_CHARACTERS))
-                }
-            },
-            onAddReminderChanged = { addReminder ->
-                _todoAdditionState.update { state ->
-                    state?.copy(addReminder = addReminder)
-                }
-            },
-        )
+    private fun createTodoAdditionState() = TodoAdditionState(
+        titleInputState = TodoTitleInputState(
+            onTitleValueChanged = ::onTodoAdditionTitleValueChanged,
+        ),
+        descriptionInputState = TodoDescriptionInputState(
+            onDescriptionValueChanged = ::onTodoAdditionDescriptionValueChanged,
+        ),
+        addReminder = false,
+        onAddReminderChanged = { addReminder ->
+            _todoAdditionState.update { state ->
+                state?.copy(addReminder = addReminder)
+            }
+        },
+    )
+
+    private fun onTodoAdditionTitleValueChanged(title: String) {
+        _todoAdditionState.update { todoAdditionState ->
+            todoAdditionState?.copy(
+                titleInputState = todoAdditionState.titleInputState.updateTitleText(title)
+            )
+        }
     }
 
-    private fun truncateText(input: String, maxLength: Int): String {
-        return if (input.length > maxLength) input.substring(0, maxLength) else input
+    private fun onTodoAdditionDescriptionValueChanged(description: String) {
+        _todoAdditionState.update { todoAdditionState ->
+            todoAdditionState?.copy(
+                descriptionInputState = todoAdditionState.descriptionInputState.updateDescriptionText(description)
+            )
+        }
     }
 }
