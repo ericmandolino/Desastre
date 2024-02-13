@@ -5,9 +5,13 @@ import androidx.room.Room
 import com.swirlfist.desastre.data.CoroutineDispatcherProvider
 import com.swirlfist.desastre.data.ICoroutineDispatcherProvider
 import com.swirlfist.desastre.data.ITodoRepository
+import com.swirlfist.desastre.data.ReminderDataSource
+import com.swirlfist.desastre.data.TodoDataSource
 import com.swirlfist.desastre.data.TodoRepository
 import com.swirlfist.desastre.data.db.ReminderDao
+import com.swirlfist.desastre.data.db.ReminderDataSourceRoom
 import com.swirlfist.desastre.data.db.TodoDao
+import com.swirlfist.desastre.data.db.TodoDataSourceRoom
 import com.swirlfist.desastre.data.db.TodoDatabase
 import com.swirlfist.desastre.domain.IAddOrUpdateReminderUseCase
 import com.swirlfist.desastre.domain.IAddOrUpdateTodoUseCase
@@ -51,13 +55,24 @@ class SingletonModule {
 
     @Singleton
     @Provides
-    fun provideTodoRepository(
+    fun provideTodoDataSource(
         todoDao: TodoDao,
+        coroutineDispatcherProvider: CoroutineDispatcherProvider,
+    ): TodoDataSource = TodoDataSourceRoom(todoDao, coroutineDispatcherProvider.getIO())
+
+    @Singleton
+    @Provides
+    fun provideReminderDataSource(
         reminderDao: ReminderDao,
-        coroutineDispatcherProvider: CoroutineDispatcherProvider
-    ): ITodoRepository {
-        return TodoRepository(todoDao, reminderDao, coroutineDispatcherProvider.getIO())
-    }
+        coroutineDispatcherProvider: CoroutineDispatcherProvider,
+    ): ReminderDataSource = ReminderDataSourceRoom(reminderDao, coroutineDispatcherProvider.getIO())
+
+    @Singleton
+    @Provides
+    fun provideTodoRepository(
+        todoDataSource: TodoDataSource,
+        reminderDataSource: ReminderDataSource,
+    ): ITodoRepository = TodoRepository(todoDataSource, reminderDataSource)
 
     @Singleton
     @Provides
