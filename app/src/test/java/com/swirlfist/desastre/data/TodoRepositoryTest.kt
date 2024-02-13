@@ -87,7 +87,7 @@ internal class TodoRepositoryTest {
         repository.addOrUpdateTodo(todo)
 
         // Assert
-        verify(todoDataSource, times(1)).insert(todo)
+        verify(todoDataSource, times(1)).addOrUpdate(todo)
     }
 
     @Test

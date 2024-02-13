@@ -13,7 +13,7 @@ class TodoRepository @Inject constructor(
 
     override fun observeTodos() = todoDataSource.observeAll()
 
-    override suspend fun addOrUpdateTodo(todo: Todo): Long = todoDataSource.insert(todo)
+    override suspend fun addOrUpdateTodo(todo: Todo): Long = todoDataSource.addOrUpdate(todo)
 
     override suspend fun removeTodo(todoId: Long) = todoDataSource.delete(todoId)
 

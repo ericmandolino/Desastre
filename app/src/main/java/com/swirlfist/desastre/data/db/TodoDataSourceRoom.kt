@@ -6,6 +6,7 @@ import com.swirlfist.desastre.data.asModel
 import com.swirlfist.desastre.data.model.Todo
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -14,8 +15,13 @@ class TodoDataSourceRoom @Inject constructor(
     private val todoDao: TodoDao,
     private val ioDispatcher: CoroutineDispatcher,
 ) : TodoDataSource {
-    override suspend fun insert(todo: Todo): Long = withContext(ioDispatcher) {
-        todoDao.insert(todo.asEntity())
+    override suspend fun addOrUpdate(todo: Todo): Long = withContext(ioDispatcher) {
+        if (todoDao.observeTodo(todo.id).first() != null) {
+            todoDao.update(todo.asEntity())
+            todo.id
+        } else {
+            todoDao.insert(todo.asEntity())
+        }
     }
 
     override suspend fun delete(todoId: Long) = withContext(ioDispatcher) {

@@ -4,7 +4,7 @@ import com.swirlfist.desastre.data.model.Todo
 import kotlinx.coroutines.flow.Flow
 
 interface TodoDataSource {
-    suspend fun insert(todo: Todo): Long
+    suspend fun addOrUpdate(todo: Todo): Long
 
     suspend fun delete(todoId: Long)
 
