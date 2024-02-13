@@ -6,6 +6,7 @@ import com.swirlfist.desastre.data.model.Reminder
 import com.swirlfist.desastre.data.model.Todo
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
@@ -15,15 +16,17 @@ class TodoRepository @Inject constructor(
     private val ioDispatcher: CoroutineDispatcher,
 ) : ITodoRepository {
     override fun observeTodo(todoId: Long): Flow<Todo?> {
-        return todoDao.observeTodo(todoId)
+        return todoDao.observeTodo(todoId).map { todoEntity -> todoEntity?.asModel() }
     }
 
     override fun observeTodos(): Flow<List<Todo>> {
-        return todoDao.observeAll()
+        return todoDao.observeAll().map { todoEntityList ->
+            todoEntityList.map { todoEntity -> todoEntity.asModel() }
+        }
     }
 
     override suspend fun addOrUpdateTodo(todo: Todo): Long = withContext(ioDispatcher) {
-        todoDao.insert(todo)
+        todoDao.insert(todo.asEntity())
     }
 
     override suspend fun removeTodo(todoId: Long) = withContext(ioDispatcher) {
@@ -31,13 +34,15 @@ class TodoRepository @Inject constructor(
     }
 
     override fun observeReminder(reminderId: Long): Flow<Reminder?> {
-        return reminderDao.observeReminder(reminderId)
+        return reminderDao.observeReminder(reminderId).map { reminderEntity -> reminderEntity?.asModel() }
     }
     override fun observeRemindersForTodo(todoId: Long): Flow<List<Reminder>> {
-        return reminderDao.observeRemindersForTodo(todoId)
+        return reminderDao.observeRemindersForTodo(todoId).map { reminderEntityList ->
+            reminderEntityList.map { reminderEntity -> reminderEntity.asModel() }
+        }
     }
     override suspend fun addOrUpdateReminder(reminder: Reminder): Long = withContext(ioDispatcher) {
-        reminderDao.insert(reminder)
+        reminderDao.insert(reminder.asEntity())
     }
     override suspend fun removeReminder(reminderId: Long) = withContext(ioDispatcher) {
         reminderDao.delete(reminderId)

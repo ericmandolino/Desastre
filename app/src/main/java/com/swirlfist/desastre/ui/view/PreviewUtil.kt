@@ -3,6 +3,8 @@ package com.swirlfist.desastre.ui.view
 import com.swirlfist.desastre.data.model.Reminder
 import com.swirlfist.desastre.data.model.Todo
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
 
 object PreviewUtil {
     fun mockTodo(
@@ -37,11 +39,7 @@ object PreviewUtil {
     fun mockReminder() = Reminder(
         id = 0,
         todoId = 0,
-        minute = 15,
-        hour = 13,
-        day = 25,
-        month = 10,
-        year = 2048,
+        time = LocalDateTime.of(2048, 10, 25, 13, 15),
     )
 
     fun mockTodayReminder(): Reminder {
@@ -49,11 +47,7 @@ object PreviewUtil {
         return Reminder(
             id = 0,
             todoId = 0,
-            minute = 15,
-            hour = 13,
-            day = today.dayOfMonth,
-            month = today.monthValue,
-            year = today.year,
+            time = LocalDateTime.of(today, LocalTime.of(13, 15)),
         )
     }
 
@@ -62,11 +56,7 @@ object PreviewUtil {
         return Reminder(
             id = 0,
             todoId = 0,
-            minute = 15,
-            hour = 13,
-            day = tomorrow.dayOfMonth,
-            month = tomorrow.monthValue,
-            year = tomorrow.year,
+            time = LocalDateTime.of(tomorrow, LocalTime.of(13, 15)),
         )
     }
 
@@ -75,11 +65,7 @@ object PreviewUtil {
         return Reminder(
             id = 0,
             todoId = 0,
-            minute = 15,
-            hour = 13,
-            day = yesterday.dayOfMonth,
-            month = yesterday.monthValue,
-            year = yesterday.year,
+            time = LocalDateTime.of(yesterday, LocalTime.of(13, 15)),
         )
     }
 

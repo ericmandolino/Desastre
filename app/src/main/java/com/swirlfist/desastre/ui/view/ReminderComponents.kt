@@ -201,10 +201,10 @@ fun ReminderItem(
     } else if (reminder.isForTomorrow()) {
         stringResource(id = R.string.tomorrow)
     } else {
-        LocalDate.of(reminder.year, reminder.month, reminder.day).toShortFormat()
+        reminder.time.toLocalDate().toShortFormat()
     }
 
-    val timeText = LocalTime.of(reminder.hour, reminder.minute).toShortFormat()
+    val timeText = reminder.time.toLocalTime().toShortFormat()
 
     AddOrEditReminderButton(
         text = "$dateText @ $timeText",

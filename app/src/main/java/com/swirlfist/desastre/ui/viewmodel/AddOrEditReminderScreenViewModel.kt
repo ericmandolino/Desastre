@@ -15,7 +15,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.LocalTime
 import javax.inject.Inject
 
 @HiltViewModel
@@ -47,15 +46,11 @@ class AddOrEditReminderScreenViewModel @Inject constructor(
             }
         } else {
             _reminderAddOrUpdateState.update { state ->
-                val localDate = LocalDate.of(reminder.year, reminder.month, reminder.day)
                 state.copy(
                     todoId = reminder.todoId,
                     reminderId = reminder.id,
-                    selectedDay = localDate,
-                    selectedTime = LocalDateTime.of(
-                        localDate,
-                        LocalTime.of(reminder.hour, reminder.minute)
-                    )
+                    selectedDay = reminder.time.toLocalDate(),
+                    selectedTime = reminder.time,
                 )
             }
         }
@@ -95,11 +90,7 @@ class AddOrEditReminderScreenViewModel @Inject constructor(
                         Reminder(
                             id = _reminderAddOrUpdateState.value.reminderId,
                             todoId = _reminderAddOrUpdateState.value.todoId,
-                            minute = selectedTime.minute,
-                            hour = selectedTime.hour,
-                            day = newSelectedDay.dayOfMonth,
-                            month = newSelectedDay.monthValue,
-                            year = newSelectedDay.year
+                            time = LocalDateTime.of(newSelectedDay, selectedTime.toLocalTime()),
                         )
                     )
                 }

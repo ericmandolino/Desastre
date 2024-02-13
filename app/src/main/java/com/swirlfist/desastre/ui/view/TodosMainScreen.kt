@@ -61,7 +61,9 @@ import com.swirlfist.desastre.ui.viewmodel.TodoTitleInputState
 import com.swirlfist.desastre.ui.viewmodel.TodosMainScreenViewModel
 import com.swirlfist.desastre.ui.viewmodel.UndoTodoRemovalState
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 import kotlin.random.Random
 
 @Composable
@@ -459,16 +461,15 @@ fun TodoListPreview() {
             ),
             getRemindersForTodo = { todo ->
                 if (todo.id % 2 == 0L) {
-                    val tomorrow = LocalDateTime.now().plusDays(1)
+                    val tomorrow = LocalDate.now().plusDays(1)
                     listOf(
                         Reminder(
                             id = Random.nextLong(),
                             todoId = todo.id,
-                            minute = 15,
-                            hour = (todo.id.toInt() % 23L).toInt(),
-                            day = tomorrow.dayOfMonth,
-                            month = tomorrow.monthValue,
-                            year = tomorrow.year
+                            time = LocalDateTime.of(
+                                tomorrow,
+                                LocalTime.of((todo.id.toInt() % 23L).toInt(), 15)
+                            ),
                         )
                     )
                 } else {
