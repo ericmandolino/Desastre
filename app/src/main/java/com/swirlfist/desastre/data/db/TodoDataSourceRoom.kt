@@ -1,8 +1,6 @@
 package com.swirlfist.desastre.data.db
 
 import com.swirlfist.desastre.data.TodoDataSource
-import com.swirlfist.desastre.data.asEntity
-import com.swirlfist.desastre.data.asModel
 import com.swirlfist.desastre.data.model.Todo
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow

@@ -1,7 +1,5 @@
-package com.swirlfist.desastre.data
+package com.swirlfist.desastre.data.db
 
-import com.swirlfist.desastre.data.db.ReminderEntity
-import com.swirlfist.desastre.data.db.TodoEntity
 import com.swirlfist.desastre.data.model.Reminder
 import com.swirlfist.desastre.data.model.Todo
 import java.time.LocalDateTime
