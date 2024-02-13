@@ -5,10 +5,10 @@ import androidx.lifecycle.viewModelScope
 import com.swirlfist.desastre.data.ICoroutineDispatcherProvider
 import com.swirlfist.desastre.data.model.Reminder
 import com.swirlfist.desastre.data.model.Todo
-import com.swirlfist.desastre.data.useCase.IAddOrUpdateTodoUseCase
-import com.swirlfist.desastre.data.useCase.IObserveRemindersForTodoUseCase
-import com.swirlfist.desastre.data.useCase.IObserveTodoListUseCase
-import com.swirlfist.desastre.data.useCase.IRemoveTodoUseCase
+import com.swirlfist.desastre.domain.IAddOrUpdateTodoUseCase
+import com.swirlfist.desastre.domain.IObserveRemindersForTodoUseCase
+import com.swirlfist.desastre.domain.IObserveTodoListUseCase
+import com.swirlfist.desastre.domain.IRemoveTodoUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay

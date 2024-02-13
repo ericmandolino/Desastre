@@ -3,10 +3,10 @@ package com.swirlfist.desastre.ui.viewmodel
 import com.swirlfist.desastre.data.ICoroutineDispatcherProvider
 import com.swirlfist.desastre.data.model.Reminder
 import com.swirlfist.desastre.data.model.Todo
-import com.swirlfist.desastre.data.useCase.IAddOrUpdateTodoUseCase
-import com.swirlfist.desastre.data.useCase.IObserveRemindersForTodoUseCase
-import com.swirlfist.desastre.data.useCase.IObserveTodoListUseCase
-import com.swirlfist.desastre.data.useCase.IRemoveTodoUseCase
+import com.swirlfist.desastre.domain.IAddOrUpdateTodoUseCase
+import com.swirlfist.desastre.domain.IObserveRemindersForTodoUseCase
+import com.swirlfist.desastre.domain.IObserveTodoListUseCase
+import com.swirlfist.desastre.domain.IRemoveTodoUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow

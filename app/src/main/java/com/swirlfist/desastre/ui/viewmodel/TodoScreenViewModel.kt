@@ -4,9 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.swirlfist.desastre.data.model.Reminder
 import com.swirlfist.desastre.data.model.Todo
-import com.swirlfist.desastre.data.useCase.IAddOrUpdateTodoUseCase
-import com.swirlfist.desastre.data.useCase.IObserveRemindersForTodoUseCase
-import com.swirlfist.desastre.data.useCase.IObserveTodoUseCase
+import com.swirlfist.desastre.domain.IAddOrUpdateTodoUseCase
+import com.swirlfist.desastre.domain.IObserveRemindersForTodoUseCase
+import com.swirlfist.desastre.domain.IObserveTodoUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow

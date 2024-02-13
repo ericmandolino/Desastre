@@ -1,4 +1,4 @@
-package com.swirlfist.desastre.data.useCase
+package com.swirlfist.desastre.domain
 
 import com.swirlfist.desastre.data.model.Reminder
 import kotlinx.coroutines.flow.Flow
