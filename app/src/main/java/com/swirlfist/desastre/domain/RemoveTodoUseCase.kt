@@ -1,5 +1,5 @@
 package com.swirlfist.desastre.domain
 
-fun interface IRemoveTodoUseCase {
+fun interface RemoveTodoUseCase {
     suspend operator fun invoke(todoId: Long)
 }

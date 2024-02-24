@@ -4,9 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.swirlfist.desastre.data.model.Reminder
 import com.swirlfist.desastre.data.model.Todo
-import com.swirlfist.desastre.domain.IAddOrUpdateTodoUseCase
-import com.swirlfist.desastre.domain.IObserveRemindersForTodoUseCase
-import com.swirlfist.desastre.domain.IObserveTodoUseCase
+import com.swirlfist.desastre.domain.AddOrUpdateTodoUseCase
+import com.swirlfist.desastre.domain.ObserveRemindersForTodoUseCase
+import com.swirlfist.desastre.domain.ObserveTodoUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,9 +17,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class TodoScreenViewModel @Inject constructor(
-    private val observeTodoUseCase: IObserveTodoUseCase,
-    private val observeRemindersForTodoUseCase: IObserveRemindersForTodoUseCase,
-    private val addOrUpdateTodoUseCase: IAddOrUpdateTodoUseCase,
+    private val observeTodoUseCase: ObserveTodoUseCase,
+    private val observeRemindersForTodoUseCase: ObserveRemindersForTodoUseCase,
+    private val addOrUpdateTodoUseCase: AddOrUpdateTodoUseCase,
 ): ViewModel() {
 
     private val _todoEditState = MutableStateFlow(createTodoEditState())

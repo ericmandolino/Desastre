@@ -5,10 +5,10 @@ import androidx.lifecycle.viewModelScope
 import com.swirlfist.desastre.data.CoroutineDispatcherProvider
 import com.swirlfist.desastre.data.model.Reminder
 import com.swirlfist.desastre.data.model.Todo
-import com.swirlfist.desastre.domain.IAddOrUpdateTodoUseCase
-import com.swirlfist.desastre.domain.IObserveRemindersForTodoUseCase
-import com.swirlfist.desastre.domain.IObserveTodoListUseCase
-import com.swirlfist.desastre.domain.IRemoveTodoUseCase
+import com.swirlfist.desastre.domain.AddOrUpdateTodoUseCase
+import com.swirlfist.desastre.domain.ObserveRemindersForTodoUseCase
+import com.swirlfist.desastre.domain.ObserveTodoListUseCase
+import com.swirlfist.desastre.domain.RemoveTodoUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -25,10 +25,10 @@ private const val UNDO_TODO_REMOVAL_MILLISECONDS = 3000L
 @HiltViewModel
 class TodosMainScreenViewModel @Inject constructor(
     private val coroutineDispatcherProvider: CoroutineDispatcherProvider,
-    private val observeTodoListUseCase: IObserveTodoListUseCase,
-    private val observeRemindersForTodoUseCase: IObserveRemindersForTodoUseCase,
-    private val addOrUpdateTodoUseCase: IAddOrUpdateTodoUseCase,
-    private val removeTodoUseCase: IRemoveTodoUseCase,
+    private val observeTodoListUseCase: ObserveTodoListUseCase,
+    private val observeRemindersForTodoUseCase: ObserveRemindersForTodoUseCase,
+    private val addOrUpdateTodoUseCase: AddOrUpdateTodoUseCase,
+    private val removeTodoUseCase: RemoveTodoUseCase,
 ) : ViewModel()  {
     private val delayedTodoRemovalJobs = mutableMapOf<Long, Job>()
 

@@ -4,9 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.swirlfist.desastre.data.model.Reminder
 import com.swirlfist.desastre.data.model.Todo
-import com.swirlfist.desastre.domain.IAddOrUpdateReminderUseCase
-import com.swirlfist.desastre.domain.IObserveReminderUseCase
-import com.swirlfist.desastre.domain.IObserveTodoUseCase
+import com.swirlfist.desastre.domain.AddOrUpdateReminderUseCase
+import com.swirlfist.desastre.domain.ObserveReminderUseCase
+import com.swirlfist.desastre.domain.ObserveTodoUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,9 +19,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AddOrEditReminderScreenViewModel @Inject constructor(
-    private val observeTodoUseCase: IObserveTodoUseCase,
-    private val observeReminderUseCase: IObserveReminderUseCase,
-    private val addOrUpdateReminderUseCase: IAddOrUpdateReminderUseCase,
+    private val observeTodoUseCase: ObserveTodoUseCase,
+    private val observeReminderUseCase: ObserveReminderUseCase,
+    private val addOrUpdateReminderUseCase: AddOrUpdateReminderUseCase,
 ) : ViewModel()  {
     private val _reminderAddOrUpdateState = MutableStateFlow(createReminderAddOrUpdateState())
     val reminderAddOrUpdateState = _reminderAddOrUpdateState.asStateFlow()

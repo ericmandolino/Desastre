@@ -3,10 +3,10 @@ package com.swirlfist.desastre.ui.viewmodel
 import com.swirlfist.desastre.data.CoroutineDispatcherProvider
 import com.swirlfist.desastre.data.model.Reminder
 import com.swirlfist.desastre.data.model.Todo
-import com.swirlfist.desastre.domain.IAddOrUpdateTodoUseCase
-import com.swirlfist.desastre.domain.IObserveRemindersForTodoUseCase
-import com.swirlfist.desastre.domain.IObserveTodoListUseCase
-import com.swirlfist.desastre.domain.IRemoveTodoUseCase
+import com.swirlfist.desastre.domain.AddOrUpdateTodoUseCase
+import com.swirlfist.desastre.domain.ObserveRemindersForTodoUseCase
+import com.swirlfist.desastre.domain.ObserveTodoListUseCase
+import com.swirlfist.desastre.domain.RemoveTodoUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -37,16 +37,16 @@ class TodosMainScreenViewModelTest {
     lateinit var coroutineDispatcherProvider: CoroutineDispatcherProvider
 
     @Mock
-    lateinit var observeTodoListUseCase: IObserveTodoListUseCase
+    lateinit var observeTodoListUseCase: ObserveTodoListUseCase
 
     @Mock
-    lateinit var observeRemindersForTodoUseCase: IObserveRemindersForTodoUseCase
+    lateinit var observeRemindersForTodoUseCase: ObserveRemindersForTodoUseCase
 
     @Mock
-    lateinit var addOrUpdateTodoUseCase: IAddOrUpdateTodoUseCase
+    lateinit var addOrUpdateTodoUseCase: AddOrUpdateTodoUseCase
 
     @Mock
-    lateinit var removeTodoUseCase: IRemoveTodoUseCase
+    lateinit var removeTodoUseCase: RemoveTodoUseCase
 
     private lateinit var viewModel: TodosMainScreenViewModel
 
