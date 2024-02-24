@@ -12,7 +12,7 @@ import com.swirlfist.desastre.ui.view.TodoScreen
 import com.swirlfist.desastre.ui.view.TodosMainScreen
 
 @Composable
-fun NavHost(
+fun DesastreNavHost(
     navController: NavHostController = rememberNavController(),
     startDestination: String = "main",
 ) {

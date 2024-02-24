@@ -4,7 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 
-import com.swirlfist.desastre.ui.NavHost
+import com.swirlfist.desastre.ui.DesastreNavHost
 import com.swirlfist.desastre.ui.theme.DesastreTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -14,7 +14,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             DesastreTheme {
-                NavHost()
+                DesastreNavHost()
             }
         }
     }
