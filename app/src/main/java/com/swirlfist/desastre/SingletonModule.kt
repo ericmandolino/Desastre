@@ -4,10 +4,10 @@ import android.content.Context
 import androidx.room.Room
 import com.swirlfist.desastre.data.CoroutineDispatcherProvider
 import com.swirlfist.desastre.data.CoroutineDispatcherProviderImpl
-import com.swirlfist.desastre.data.ITodoRepository
 import com.swirlfist.desastre.data.ReminderDataSource
 import com.swirlfist.desastre.data.TodoDataSource
 import com.swirlfist.desastre.data.TodoRepository
+import com.swirlfist.desastre.data.TodoRepositoryImpl
 import com.swirlfist.desastre.data.db.ReminderDao
 import com.swirlfist.desastre.data.db.ReminderDataSourceRoom
 import com.swirlfist.desastre.data.db.TodoDao
@@ -72,37 +72,37 @@ class SingletonModule {
     fun provideTodoRepository(
         todoDataSource: TodoDataSource,
         reminderDataSource: ReminderDataSource,
-    ): ITodoRepository = TodoRepository(todoDataSource, reminderDataSource)
+    ): TodoRepository = TodoRepositoryImpl(todoDataSource, reminderDataSource)
 
     @Singleton
     @Provides
-    fun provideObserveTodoUseCase(todoRepository: ITodoRepository): IObserveTodoUseCase = IObserveTodoUseCase(todoRepository::observeTodo)
+    fun provideObserveTodoUseCase(todoRepository: TodoRepository): IObserveTodoUseCase = IObserveTodoUseCase(todoRepository::observeTodo)
 
     @Singleton
     @Provides
-    fun provideObserveTodoListUseCase(todoRepository: ITodoRepository): IObserveTodoListUseCase = IObserveTodoListUseCase(todoRepository::observeTodos)
+    fun provideObserveTodoListUseCase(todoRepository: TodoRepository): IObserveTodoListUseCase = IObserveTodoListUseCase(todoRepository::observeTodos)
 
     @Singleton
     @Provides
-    fun provideAddOrUpdateTodoUseCase(todoRepository: ITodoRepository): IAddOrUpdateTodoUseCase = IAddOrUpdateTodoUseCase(todoRepository::addOrUpdateTodo)
+    fun provideAddOrUpdateTodoUseCase(todoRepository: TodoRepository): IAddOrUpdateTodoUseCase = IAddOrUpdateTodoUseCase(todoRepository::addOrUpdateTodo)
 
     @Singleton
     @Provides
-    fun provideRemoveTodoUseCase(todoRepository: ITodoRepository): IRemoveTodoUseCase = IRemoveTodoUseCase(todoRepository::removeTodo)
+    fun provideRemoveTodoUseCase(todoRepository: TodoRepository): IRemoveTodoUseCase = IRemoveTodoUseCase(todoRepository::removeTodo)
 
     @Singleton
     @Provides
-    fun provideObserveRemindersForTodoUseCase(todoRepository: ITodoRepository): IObserveRemindersForTodoUseCase = IObserveRemindersForTodoUseCase(todoRepository::observeRemindersForTodo)
+    fun provideObserveRemindersForTodoUseCase(todoRepository: TodoRepository): IObserveRemindersForTodoUseCase = IObserveRemindersForTodoUseCase(todoRepository::observeRemindersForTodo)
 
     @Singleton
     @Provides
-    fun provideObserveReminderUseCase(todoRepository: ITodoRepository): IObserveReminderUseCase = IObserveReminderUseCase(todoRepository::observeReminder)
+    fun provideObserveReminderUseCase(todoRepository: TodoRepository): IObserveReminderUseCase = IObserveReminderUseCase(todoRepository::observeReminder)
 
     @Singleton
     @Provides
-    fun provideAddOrUpdateReminderUseCase(todoRepository: ITodoRepository): IAddOrUpdateReminderUseCase = IAddOrUpdateReminderUseCase(todoRepository::addOrUpdateReminder)
+    fun provideAddOrUpdateReminderUseCase(todoRepository: TodoRepository): IAddOrUpdateReminderUseCase = IAddOrUpdateReminderUseCase(todoRepository::addOrUpdateReminder)
 
     @Singleton
     @Provides
-    fun provideRemoveReminderUSeCase(todoRepository: ITodoRepository): IRemoveReminderUseCase = IRemoveReminderUseCase(todoRepository::removeReminder)
+    fun provideRemoveReminderUSeCase(todoRepository: TodoRepository): IRemoveReminderUseCase = IRemoveReminderUseCase(todoRepository::removeReminder)
 }

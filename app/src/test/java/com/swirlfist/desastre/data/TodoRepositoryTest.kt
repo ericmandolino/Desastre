@@ -26,7 +26,7 @@ internal class TodoRepositoryTest {
     @Test
     fun observeTodo_returnsFlowOfTodo() = runTest {
         // Arrange
-        val repository = TodoRepository(
+        val repository = TodoRepositoryImpl(
             todoDataSource,
             reminderDataSource,
         )
@@ -49,7 +49,7 @@ internal class TodoRepositoryTest {
     @Test
     fun observeTodos_returnFlowOfTodoList() = runTest {
         // Arrange
-        val repository = TodoRepository(
+        val repository = TodoRepositoryImpl(
             todoDataSource,
             reminderDataSource,
         )
@@ -72,7 +72,7 @@ internal class TodoRepositoryTest {
     @Test
     fun addTodo_todoAdded() = runTest {
         // Arrange
-        val repository = TodoRepository(
+        val repository = TodoRepositoryImpl(
             todoDataSource,
             reminderDataSource,
         )
@@ -93,7 +93,7 @@ internal class TodoRepositoryTest {
     @Test
     fun removeTodo_todoRemoved() = runTest {
         // Arrange
-        val repository = TodoRepository(
+        val repository = TodoRepositoryImpl(
             todoDataSource,
             reminderDataSource,
         )
@@ -109,7 +109,7 @@ internal class TodoRepositoryTest {
     @Test
     fun observeReminder_returnFlowOfReminder() = runTest {
         // Arrange
-        val repository = TodoRepository(
+        val repository = TodoRepositoryImpl(
             todoDataSource,
             reminderDataSource,
         )
@@ -131,7 +131,7 @@ internal class TodoRepositoryTest {
     @Test
     fun observeRemindersForTodo_returnFlowOfReminderList() = runTest {
         // Arrange
-        val repository = TodoRepository(
+        val repository = TodoRepositoryImpl(
             todoDataSource,
             reminderDataSource,
         )
@@ -153,7 +153,7 @@ internal class TodoRepositoryTest {
     @Test
     fun addReminder_reminderAdded() = runTest {
         // Arrange
-        val repository = TodoRepository(
+        val repository = TodoRepositoryImpl(
             todoDataSource,
             reminderDataSource,
         )
@@ -173,7 +173,7 @@ internal class TodoRepositoryTest {
     @Test
     fun removeReminder_reminderRemoved() = runTest {
         // Arrange
-        val repository = TodoRepository(
+        val repository = TodoRepositoryImpl(
             todoDataSource,
             reminderDataSource,
         )
