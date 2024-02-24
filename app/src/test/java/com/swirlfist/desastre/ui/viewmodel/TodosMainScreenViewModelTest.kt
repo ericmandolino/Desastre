@@ -1,6 +1,6 @@
 package com.swirlfist.desastre.ui.viewmodel
 
-import com.swirlfist.desastre.data.ICoroutineDispatcherProvider
+import com.swirlfist.desastre.data.CoroutineDispatcherProvider
 import com.swirlfist.desastre.data.model.Reminder
 import com.swirlfist.desastre.data.model.Todo
 import com.swirlfist.desastre.domain.IAddOrUpdateTodoUseCase
@@ -34,7 +34,7 @@ import org.mockito.kotlin.whenever
 @RunWith(MockitoJUnitRunner::class)
 class TodosMainScreenViewModelTest {
     @Mock
-    lateinit var coroutineDispatcherProvider: ICoroutineDispatcherProvider
+    lateinit var coroutineDispatcherProvider: CoroutineDispatcherProvider
 
     @Mock
     lateinit var observeTodoListUseCase: IObserveTodoListUseCase

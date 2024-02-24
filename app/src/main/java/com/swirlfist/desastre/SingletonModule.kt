@@ -3,7 +3,7 @@ package com.swirlfist.desastre
 import android.content.Context
 import androidx.room.Room
 import com.swirlfist.desastre.data.CoroutineDispatcherProvider
-import com.swirlfist.desastre.data.ICoroutineDispatcherProvider
+import com.swirlfist.desastre.data.CoroutineDispatcherProviderImpl
 import com.swirlfist.desastre.data.ITodoRepository
 import com.swirlfist.desastre.data.ReminderDataSource
 import com.swirlfist.desastre.data.TodoDataSource
@@ -34,7 +34,7 @@ class SingletonModule {
 
     @Singleton
     @Provides
-    fun provideCoroutineDispatcherProvider(): ICoroutineDispatcherProvider = CoroutineDispatcherProvider()
+    fun provideCoroutineDispatcherProvider(): CoroutineDispatcherProvider = CoroutineDispatcherProviderImpl()
 
     @Singleton
     @Provides

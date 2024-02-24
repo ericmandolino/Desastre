@@ -2,7 +2,7 @@ package com.swirlfist.desastre.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.swirlfist.desastre.data.ICoroutineDispatcherProvider
+import com.swirlfist.desastre.data.CoroutineDispatcherProvider
 import com.swirlfist.desastre.data.model.Reminder
 import com.swirlfist.desastre.data.model.Todo
 import com.swirlfist.desastre.domain.IAddOrUpdateTodoUseCase
@@ -24,7 +24,7 @@ private const val UNDO_TODO_REMOVAL_MILLISECONDS = 3000L
 
 @HiltViewModel
 class TodosMainScreenViewModel @Inject constructor(
-    private val coroutineDispatcherProvider: ICoroutineDispatcherProvider,
+    private val coroutineDispatcherProvider: CoroutineDispatcherProvider,
     private val observeTodoListUseCase: IObserveTodoListUseCase,
     private val observeRemindersForTodoUseCase: IObserveRemindersForTodoUseCase,
     private val addOrUpdateTodoUseCase: IAddOrUpdateTodoUseCase,
