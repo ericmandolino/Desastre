@@ -5,11 +5,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.swirlfist.desastre.ui.theme.DesastreTheme
 import com.swirlfist.desastre.ui.viewmodel.AddOrEditReminderScreenViewModel
 import java.time.LocalDate
@@ -21,15 +21,15 @@ fun AddOrEditReminderScreen(
     todoId: Long?,
     reminderId: Long? = null,
 ) {
-    val reminderAddOrUpdateState = addOrEditReminderScreenViewModel.reminderAddOrUpdateState.collectAsState().value
+    val reminderAddOrUpdateState = addOrEditReminderScreenViewModel.reminderAddOrUpdateState.collectAsStateWithLifecycle().value
 
-    val todo = if (todoId != null) addOrEditReminderScreenViewModel.observeTodo(todoId).collectAsState(null).value else null
+    val todo = if (todoId != null) addOrEditReminderScreenViewModel.observeTodo(todoId).collectAsStateWithLifecycle(null).value else null
     if (todo == null) {
         TodoNotFound()
         return
     }
 
-    val reminder = if (reminderId != null) addOrEditReminderScreenViewModel.observeReminder(reminderId).collectAsState(null).value else null
+    val reminder = if (reminderId != null) addOrEditReminderScreenViewModel.observeReminder(reminderId).collectAsStateWithLifecycle(null).value else null
     if (reminderId != null && reminder == null) {
         ReminderNotFound()
         return

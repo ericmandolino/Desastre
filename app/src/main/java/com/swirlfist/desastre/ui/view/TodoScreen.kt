@@ -26,7 +26,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -34,6 +34,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.swirlfist.desastre.R
 import com.swirlfist.desastre.data.model.Reminder
 import com.swirlfist.desastre.data.model.Todo
@@ -48,17 +49,21 @@ fun TodoScreen(
     onNavigateToAddReminder: (todoId: Long) -> Unit,
     onNavigateToEditReminder: (todoId: Long, reminderId: Long) -> Unit,
 ) {
-    val todo = if (todoId != null) todoScreenViewModel.observeTodo(todoId).collectAsState(null).value else null
-    if (todo == null) {
+    if (todoId == null) {
         TodoNotFound()
         return
     }
 
-    val todoEditState = todoScreenViewModel.todoEditState.collectAsState().value
+    val observedTodo by todoScreenViewModel.observeTodo(todoId).collectAsStateWithLifecycle(null)
+    val reminders by todoScreenViewModel.observeRemindersForTodo(todoId)
+        .collectAsStateWithLifecycle(
+            emptyList()
+        )
+    val todoEditState = todoScreenViewModel.todoEditState.collectAsStateWithLifecycle().value
     val snackbarHostState = remember { SnackbarHostState() }
-    val reminders =  todoScreenViewModel.observeRemindersForTodo(todo.id).collectAsState(initial = listOf()).value
-    val todoIdToGetNewReminder = todoScreenViewModel.addReminderState.collectAsState().value
-    val reminderToEdit = todoScreenViewModel.editReminderState.collectAsState().value
+    val todoIdToGetNewReminder =
+        todoScreenViewModel.addReminderState.collectAsStateWithLifecycle().value
+    val reminderToEdit = todoScreenViewModel.editReminderState.collectAsStateWithLifecycle().value
 
     LaunchedEffect(todoIdToGetNewReminder, reminderToEdit) {
         if (todoIdToGetNewReminder != null) {
@@ -70,30 +75,32 @@ fun TodoScreen(
         }
     }
 
-    Scaffold(
-        modifier = Modifier.padding(16.dp),
-        content = { paddingValues ->
-            Todo(
-                todo = todo,
-                reminders = reminders,
-                todoEditState = todoEditState,
-                paddingValues = paddingValues,
-                onAddReminder = todoScreenViewModel::addReminderForTodo,
-                onEditReminder = todoScreenViewModel::editReminder,
-            )
-        },
-        floatingActionButton = @Composable {
-            TodoEditFloatingButtons(
-                isEditingTodo = todoEditState.isEditing,
-                onEditClick = { todoScreenViewModel.editTodo(todo) },
-                onDoneClick = { todoScreenViewModel.finishEditTodo(todo) },
-                onCancelClick = todoScreenViewModel::cancelEditTodo,
-            )
-        },
-        snackbarHost = {
-            SnackbarHost(hostState = snackbarHostState)
-        }
-    )
+    observedTodo?.let { todo ->
+        Scaffold(
+            modifier = Modifier.padding(16.dp),
+            content = { paddingValues ->
+                Todo(
+                    todo = todo,
+                    reminders = reminders,
+                    todoEditState = todoEditState,
+                    paddingValues = paddingValues,
+                    onAddReminder = todoScreenViewModel::addReminderForTodo,
+                    onEditReminder = todoScreenViewModel::editReminder,
+                )
+            },
+            floatingActionButton = @Composable {
+                TodoEditFloatingButtons(
+                    isEditingTodo = todoEditState.isEditing,
+                    onEditClick = { todoScreenViewModel.editTodo(todo) },
+                    onDoneClick = { todoScreenViewModel.finishEditTodo(todo) },
+                    onCancelClick = todoScreenViewModel::cancelEditTodo,
+                )
+            },
+            snackbarHost = {
+                SnackbarHost(hostState = snackbarHostState)
+            }
+        )
+    } ?: TodoNotFound()
 }
 
 @Composable

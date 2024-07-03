@@ -38,7 +38,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -51,6 +50,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.swirlfist.desastre.R
 import com.swirlfist.desastre.data.model.Reminder
 import com.swirlfist.desastre.data.model.Todo
@@ -74,10 +74,10 @@ fun TodosMainScreen(
     onNavigateToEditReminder: (todoId: Long, reminderId: Long) -> Unit,
 ) {
     val scope = rememberCoroutineScope()
-    val isAddingTodo = todosMainScreenViewModel.todoAdditionState.collectAsState().value != null
-    val todoIdToGetNewReminder = todosMainScreenViewModel.addReminderState.collectAsState().value
-    val reminderToEdit = todosMainScreenViewModel.editReminderState.collectAsState().value
-    val undoTodoRemovalState = todosMainScreenViewModel.undoTodoRemovalState.collectAsState().value
+    val isAddingTodo = todosMainScreenViewModel.todoAdditionState.collectAsStateWithLifecycle().value != null
+    val todoIdToGetNewReminder = todosMainScreenViewModel.addReminderState.collectAsStateWithLifecycle().value
+    val reminderToEdit = todosMainScreenViewModel.editReminderState.collectAsStateWithLifecycle().value
+    val undoTodoRemovalState = todosMainScreenViewModel.undoTodoRemovalState.collectAsStateWithLifecycle().value
     val snackbarHostState = remember { SnackbarHostState() }
     val todoRemovedString = stringResource(R.string.todo_removed)
     val undoString = stringResource(R.string.undo)
@@ -117,17 +117,19 @@ fun TodosMainScreen(
     }
 
     Scaffold(
-        modifier = Modifier.padding(8.dp),
+        modifier = Modifier.padding(16.dp),
         content = { paddingValues ->
             TodoMainScreenContent(
-                todos = todosMainScreenViewModel.observeTodoList().collectAsState(initial = listOf()).value,
+                todos = todosMainScreenViewModel.observeTodoList().collectAsStateWithLifecycle(
+                    emptyList()
+                ).value,
                 getRemindersForTodo = { todo ->
                     todosMainScreenViewModel
                         .observeRemindersForTodo(todo.id)
-                        .collectAsState(initial = listOf())
+                        .collectAsStateWithLifecycle(emptyList())
                         .value
                 },
-                todoAdditionState = todosMainScreenViewModel.todoAdditionState.collectAsState().value,
+                todoAdditionState = todosMainScreenViewModel.todoAdditionState.collectAsStateWithLifecycle().value,
                 undoTodoRemovalState = undoTodoRemovalState,
                 paddingValues,
                 onCompleteAddTodo = {
@@ -249,7 +251,7 @@ fun TodoList(
     LazyColumn(
         modifier = Modifier
             .padding(paddingValues),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         items(
             count = filteredTodos.size,
