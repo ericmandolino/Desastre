@@ -62,6 +62,7 @@ import androidx.compose.ui.window.DialogProperties
 import com.swirlfist.desastre.R
 import com.swirlfist.desastre.data.model.Reminder
 import com.swirlfist.desastre.data.model.ReminderTimeUnit
+import com.swirlfist.desastre.ui.TodoSelectableDates
 import com.swirlfist.desastre.ui.theme.DesastreTheme
 import com.swirlfist.desastre.util.isForToday
 import com.swirlfist.desastre.util.isForTomorrow
@@ -71,7 +72,6 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
-import java.time.ZoneId
 import java.time.ZoneOffset
 
 private const val MIN_REMINDER_MINUTES = 60L
@@ -611,7 +611,9 @@ fun DatePicker(
     onDateSelected: (LocalDate) -> Unit,
     initialDate: LocalDate? = null,
 ) {
-    val datePickerState = rememberDatePickerState(initialSelectedDateMillis = initialDate?.atStartOfDay()?.atOffset(ZoneOffset.UTC)?.toInstant()?.toEpochMilli())
+    val datePickerState = rememberDatePickerState(
+        initialSelectedDateMillis = initialDate?.atStartOfDay()?.atOffset(ZoneOffset.UTC)?.toInstant()?.toEpochMilli(),
+        selectableDates = TodoSelectableDates(LocalDate.now()))
     val confirmEnabled = derivedStateOf { datePickerState.selectedDateMillis != null }
     DatePickerDialog(
         onDismissRequest = onDismiss,
@@ -639,12 +641,6 @@ fun DatePicker(
     ) {
         DatePicker(
             state = datePickerState,
-            dateValidator = { dateMillis -> run{
-                    val today = LocalDate.now()
-                    val chosenDate = LocalDate.from(Instant.ofEpochMilli(dateMillis).atZone(ZoneId.systemDefault()))
-                    chosenDate.isEqual(today) || chosenDate.isAfter(today)
-                }
-            }
         )
     }
 }
