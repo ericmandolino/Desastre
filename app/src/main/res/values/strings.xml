@@ -9,6 +9,7 @@
     <string name="description">Description</string>
     <string name="todo_removed">TODO removed</string>
     <string name="add_reminder">Add reminder</string>
+    <string name="reminder_for">Remind me of %s</string>
     <string name="title_needed_error">A title is needed!</string>
     <string name="validation_failed">Validation failed</string>
     <string name="nothing_to_do">Nothing to do?</string>

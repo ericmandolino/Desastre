@@ -1,15 +1,24 @@
 package com.swirlfist.desastre.ui.view
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.swirlfist.desastre.R
+import com.swirlfist.desastre.data.model.Todo
 import com.swirlfist.desastre.ui.theme.DesastreTheme
 import com.swirlfist.desastre.ui.viewmodel.AddOrEditReminderScreenViewModel
 import java.time.LocalDate
@@ -40,7 +49,9 @@ fun AddOrEditReminderScreen(
     }
 
     if (!reminderAddOrUpdateState.daySelected) {
-        SelectorWrapper {
+        SelectorWrapper(
+            todo = todo
+        ) {
             DaySelector(
                 { selectedDate ->
                     run {
@@ -52,7 +63,9 @@ fun AddOrEditReminderScreen(
         }
     } else if (!reminderAddOrUpdateState.timeSelected) {
         val forToday = reminderAddOrUpdateState.selectedDay?.isEqual(LocalDate.now()) ?: false
-        SelectorWrapper {
+        SelectorWrapper(
+            todo = todo
+        ) {
             TimeSelector(
                 forToday,
                 { selectedTime ->
@@ -75,13 +88,25 @@ fun AddOrEditReminderScreen(
 
 @Composable
 fun SelectorWrapper(
+    todo: Todo,
     wrappedSelector: @Composable () -> Unit,
 ) {
-    Row(
-        modifier = Modifier.fillMaxSize(),
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically,
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(
+            space = 8.dp,
+            alignment = Alignment.CenterVertically
+        ),
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
+        Text(
+            text = stringResource(R.string.reminder_for, todo.title),
+            style = MaterialTheme.typography.titleMedium,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
         wrappedSelector()
     }
 }
