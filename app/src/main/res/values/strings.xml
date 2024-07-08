@@ -9,7 +9,8 @@
     <string name="description">Description</string>
     <string name="todo_removed">TODO removed</string>
     <string name="add_reminder">Add reminder</string>
-    <string name="reminder_for">Remind me of %s</string>
+    <string name="reminder_info_for_setting_day">Remind me of %s</string>
+    <string name="reminder_info_for_setting_time">Remind me %s of %s </string>
     <string name="title_needed_error">A title is needed!</string>
     <string name="validation_failed">Validation failed</string>
     <string name="nothing_to_do">Nothing to do?</string>
@@ -17,6 +18,7 @@
     <string name="time_from_now">%s from now</string>
     <string name="today">Today</string>
     <string name="tomorrow">Tomorrow</string>
+    <string name="on_this_date">on %s</string>
     <string name="pick_a_date">Pick a date</string>
     <string name="pick_a_time">Pick a time</string>
     <string name="select_time">Select time</string>
